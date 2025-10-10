@@ -1,0 +1,74 @@
+@baseUrl = http://localhost:3000
+
+### RECADOS
+GET {{baseUrl}}/fruta/
+?limit=10
+&offset=0
+
+
+###
+GET {{baseUrl}}/fruta/1/
+
+###
+POST {{baseUrl}}/fruta/
+Content-Type: application/json
+
+{
+    "nome": "Limão",
+    "peso": 2,
+    "embalagem": "Papelão",
+    "tipo": "2"
+}
+
+
+###
+PATCH {{baseUrl}}/fruta/1/
+Content-Type: application/json
+
+{
+    "nome": "Limão"
+}
+###
+DELETE {{baseUrl}}/recados/20/
+Content-Type: application/json
+
+### PESSOAS
+GET {{baseUrl}}/pessoas/
+?limit=10
+&offset=10
+
+
+###
+GET {{baseUrl}}/bloco/7/
+
+###
+POST {{baseUrl}}/bloco/
+Content-Type: application/json
+
+{
+    "numero": 1,
+    "lado": "LD Motorista baixo",
+    "cargaId": 1,
+    "status": "Carregando",
+    "quantidadeMaximaCaixas": 25,
+    "frutaIds": [2, 3]
+}
+
+
+###
+PATCH {{baseUrl}}/bloco/7/
+Content-Type: application/json
+
+{
+    "qtdCaixas": 1
+}
+###
+DELETE {{baseUrl}}/bloco/7/
+Content-Type: application/json
+
+
+### AppControllerGetHello
+
+# @name AppControllerGetHello
+GET {{baseUrl}}/
+
