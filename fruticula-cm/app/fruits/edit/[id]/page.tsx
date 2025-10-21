@@ -145,7 +145,7 @@ export default function EditFruitPage() {
     setEmbalagemTipo("");
     setEmbalagemFieldErrors({});
     setIsEmbalagemModalOpen(true);
-    fetchEmbalagensDisponiveis(); 
+    fetchEmbalagensDisponiveis();
   };
 
   const validateEmbalagemFields = (): EmbalagemFieldErrors => {

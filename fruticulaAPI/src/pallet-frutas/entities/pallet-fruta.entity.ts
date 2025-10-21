@@ -1,3 +1,4 @@
+import { Carga } from 'src/carga/entities/carga.entity';
 import { FrutasEmbalagem } from 'src/frutas-embalagens/entities/frutas-embalagen.entity';
 import {
   Column,
@@ -31,4 +32,8 @@ export class PalletFruta {
   )
   @JoinColumn({ name: 'idFrutasEmbalagem' })
   frutasEmbalagem: FrutasEmbalagem;
+
+  @ManyToOne(() => Carga, { nullable: false })
+  @JoinColumn({ name: 'idCarga' })
+  carga: Carga;
 }

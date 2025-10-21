@@ -46,7 +46,7 @@ export class EmbalagemService {
     return embalagens;
   }
 
-  async findOne(@Param('id', ParseIntPipe) id: number) {
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<Embalagem> {
     const embalagem = await this.embalagemRepository.findOne({ where: { id } });
 
     if (!embalagem) {
@@ -59,7 +59,7 @@ export class EmbalagemService {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateEmbalagemDto: UpdateEmbalagemDto,
-  ) {
+  ): Promise<Embalagem> {
     const dadosEmbalagem = {
       nome: updateEmbalagemDto.nome,
     };

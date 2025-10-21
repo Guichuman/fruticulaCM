@@ -32,6 +32,11 @@ export class FrutasEmbalagensController {
     return this.frutasEmbalagensService.findEmbalagens(+id);
   }
 
+  @Get('fruta/:frutaId')
+  findByFruta(@Param('frutaId') frutaId: number) {
+    return this.frutasEmbalagensService.findByFruta(frutaId);
+  }
+
   @Patch(':id')
   update(
     @Param('id') id: string,

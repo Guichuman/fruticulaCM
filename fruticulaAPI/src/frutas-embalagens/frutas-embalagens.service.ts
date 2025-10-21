@@ -102,7 +102,6 @@ export class FrutasEmbalagensService {
           id: true,
           nome: true,
         },
-        fruta: true,
       },
     });
 
@@ -111,6 +110,30 @@ export class FrutasEmbalagensService {
     }
 
     return frutasEmbalagem.map((i) => i.embalagem);
+  }
+
+  async findByFruta(
+    @Param('frutaId', ParseIntPipe) frutaId: number,
+  ): Promise<{ id: number; nome: string }[]> {
+    const frutasEmbalagem = await this.frutasEmbalagemRepository.find({
+      where: {
+        fruta: { id: frutaId },
+      },
+      select: { embalagem: { nome: true, id: true } },
+      relations: { embalagem: true },
+    });
+
+    if (!frutasEmbalagem) {
+      throw new NotFoundException('FrutasEmbalagens não encontrado');
+    }
+
+    const embalagens = frutasEmbalagem.map((fe) => fe.embalagem);
+
+    const embalagensUnicas = embalagens.filter(
+      (emb, index, self) => index === self.findIndex((e) => e.id === emb.id),
+    );
+
+    return embalagensUnicas;
   }
 
   async update(

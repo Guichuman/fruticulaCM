@@ -150,12 +150,13 @@ export default function LoadingPage() {
 
       try {
         const response = await fetch(
-          `http://localhost:3000/frutas-embalagens/?id=${selectedFruitId}`
+          `http://localhost:3000/frutas-embalagens/fruta/${selectedFruitId}`
         );
         if (response.ok) {
           const data = await response.json();
-          console.log("DATA: ", data);
-          setAvailablePackaging(data.embalagem);
+          console.log("EMBALAGENS: ", data);
+
+          setAvailablePackaging(data);
         } else {
           setAvailablePackaging([]);
         }
@@ -164,7 +165,6 @@ export default function LoadingPage() {
         setAvailablePackaging([]);
       }
     };
-
     fetchPackaging();
     setSelectedPackagingId("");
   }, [selectedFruitId]);
@@ -473,7 +473,6 @@ export default function LoadingPage() {
                         (_, index) => {
                           const blockNumber = index + 1;
 
-                          // Encontrar pallets para este bloco
                           const motoristaAlto = loadedPallets.find(
                             (p) =>
                               p.bloco === blockNumber &&
@@ -521,7 +520,6 @@ export default function LoadingPage() {
                                       caixas
                                     </div>
 
-                                    {/* Botões de ação - aparecem no hover */}
                                     <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
                                       <Button
                                         variant="ghost"
@@ -819,7 +817,7 @@ export default function LoadingPage() {
                     onValueChange={setSelectedPackagingId}
                     disabled={
                       !selectedFruitId || availablePackaging.length === 0
-                    }
+                    } // 👈 aqui está a lógica
                   >
                     <SelectTrigger id="packaging-select">
                       <SelectValue

@@ -1,11 +1,13 @@
 import { Caminhao } from 'src/caminhao/entities/caminhao.entity';
 import { Motorista } from 'src/motorista/entities/motorista.entity';
+import { PalletFruta } from 'src/pallet-frutas/entities/pallet-fruta.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -42,4 +44,7 @@ export class Carga {
   @ManyToOne(() => Motorista, { nullable: false, onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'idMotorista' })
   motorista: Motorista;
+
+  @OneToMany(() => PalletFruta, (pallet) => pallet.carga)
+  pallets: PalletFruta[];
 }
