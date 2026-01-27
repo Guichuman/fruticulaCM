@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 type Driver = {
   id: number;
@@ -195,6 +196,7 @@ export default function NewTruckPage() {
   };
 
   return (
+    <ProtectedRoute>
     <div className="min-h-screen bg-background">
       <NavBar />
       <div className="container mx-auto py-10">
@@ -333,5 +335,6 @@ export default function NewTruckPage() {
         </div>
       </div>
     </div>
+    </ProtectedRoute>
   );
 }

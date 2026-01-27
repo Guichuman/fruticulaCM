@@ -17,6 +17,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 type FruitItem = {
   id: number
@@ -58,6 +59,7 @@ export default function PalletsPage() {
   }
 
   return (
+    <ProtectedRoute>
     <div className="min-h-screen bg-background">
       <NavBar />
       <div className="container mx-auto py-10">

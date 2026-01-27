@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 type TruckType = {
   id: number;
@@ -97,6 +98,7 @@ export default function TrucksPage() {
   };
 
   return (
+    <ProtectedRoute>
     <div className="min-h-screen bg-background">
       <NavBar />
       <div className="container mx-auto py-10">
@@ -276,5 +278,6 @@ export default function TrucksPage() {
         </Card>
       </div>
     </div>
+    </ProtectedRoute>
   );
 }

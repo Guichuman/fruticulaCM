@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { NavBar } from "@/components/nav-bar";
 import { Truck, User, Apple, Package2 } from "lucide-react";
@@ -9,9 +11,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 export default function CadastrosPage() {
   return (
+    <ProtectedRoute>
     <main className="min-h-screen bg-background">
       <NavBar />
       <div className="container mx-auto py-10 px-4">
@@ -105,5 +109,6 @@ export default function CadastrosPage() {
         </div>
       </div>
     </main>
+    </ProtectedRoute>
   );
 }

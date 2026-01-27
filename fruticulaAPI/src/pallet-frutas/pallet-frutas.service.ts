@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { PalletFruta } from './entities/pallet-fruta.entity';
 import { Repository } from 'typeorm';
 import { FrutasEmbalagem } from 'src/frutas-embalagens/entities/frutas-embalagen.entity';
-import { Carga } from 'src/carga/entities/carga.entity';
+import { Pallet } from 'src/pallet/entities/pallet.entity';
 
 @Injectable()
 export class PalletFrutasService {
@@ -16,8 +16,8 @@ export class PalletFrutasService {
     @InjectRepository(FrutasEmbalagem)
     private readonly frutasEmbalagemRepo: Repository<FrutasEmbalagem>,
 
-    @InjectRepository(FrutasEmbalagem)
-    private readonly cargaRepo: Repository<Carga>,
+    @InjectRepository(Pallet)
+    private readonly palletRepo: Repository<Pallet>,
   ) {}
 
   create(createPalletFrutaDto: CreatePalletFrutaDto) {
@@ -28,7 +28,7 @@ export class PalletFrutasService {
     idFruta: number,
     idEmbalagem: number,
     quantidadeCaixa: number,
-    idCarga: number,
+    idPallet: number,
   ): Promise<PalletFruta> {
     const frutaEmbalagem = await this.frutasEmbalagemRepo.findOne({
       where: { fruta: { id: idFruta }, embalagem: { id: idEmbalagem } },
@@ -40,16 +40,16 @@ export class PalletFrutasService {
       );
     }
 
-    const carga = await this.cargaRepo.findOne({ where: { id: idCarga } });
+    const pallet = await this.palletRepo.findOne({ where: { id: idPallet } });
 
-    if (!carga) {
-      throw new NotFoundException('Carga não encontrada');
+    if (!pallet) {
+      throw new NotFoundException('Pallet não encontrado');
     }
 
     const palletFruta = this.palletFrutaRepo.create({
       quantidadeCaixa,
-      frutasEmbalagem: frutaEmbalagem,
-      carga,
+      idPallet,
+      idFrutasEmbalagem: frutaEmbalagem.id,
     });
 
     return await this.palletFrutaRepo.save(palletFruta);

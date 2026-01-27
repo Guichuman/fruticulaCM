@@ -13,6 +13,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 type Load = {
   id: number;
@@ -82,6 +83,7 @@ export default function LoadsPage() {
   };
 
   return (
+    <ProtectedRoute>
     <div className="min-h-screen bg-background">
       <NavBar />
       <div className="container mx-auto py-10">
@@ -196,5 +198,6 @@ export default function LoadsPage() {
         )}
       </div>
     </div>
+    </ProtectedRoute>
   );
 }

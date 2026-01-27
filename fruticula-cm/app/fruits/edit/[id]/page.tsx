@@ -30,6 +30,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 type EmbalagemFruta = {
   id: number;
@@ -330,7 +331,8 @@ export default function EditFruitPage() {
 
   if (isLoadingData) {
     return (
-      <div className="min-h-screen bg-background">
+      <ProtectedRoute>
+    <div className="min-h-screen bg-background">
         <NavBar />
         <div className="container mx-auto py-10">
           <div className="flex items-center justify-center">
@@ -343,6 +345,7 @@ export default function EditFruitPage() {
           </div>
         </div>
       </div>
+    </ProtectedRoute>
     );
   }
 
@@ -654,5 +657,6 @@ export default function EditFruitPage() {
         </DialogContent>
       </Dialog>
     </div>
+    </ProtectedRoute>
   );
 }

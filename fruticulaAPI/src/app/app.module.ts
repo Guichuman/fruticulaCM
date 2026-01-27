@@ -7,6 +7,10 @@ import { CaminhaoModule } from 'src/caminhao/caminhao.module';
 import { MotoristaModule } from 'src/motorista/motorista.module';
 import { CargaModule } from 'src/carga/carga.module';
 import { EmbalagemModule } from 'src/embalagem/embalagem.module';
+import { UsuarioModule } from 'src/usuario/usuario.module';
+import { PalletModule } from 'src/pallet/pallet.module';
+import { PalletFrutasModule } from 'src/pallet-frutas/pallet-frutas.module';
+import { FrutasEmbalagensModule } from 'src/frutas-embalagens/frutas-embalagens.module';
 
 @Module({
   imports: [
@@ -25,6 +29,10 @@ import { EmbalagemModule } from 'src/embalagem/embalagem.module';
     MotoristaModule,
     CargaModule,
     EmbalagemModule,
+    UsuarioModule,
+    PalletModule,
+    PalletFrutasModule,
+    FrutasEmbalagensModule,
   ],
   controllers: [AppController],
   providers: [AppService],

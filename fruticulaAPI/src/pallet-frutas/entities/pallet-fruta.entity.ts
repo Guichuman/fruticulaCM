@@ -1,4 +1,4 @@
-import { Carga } from 'src/carga/entities/carga.entity';
+import { Pallet } from 'src/pallet/entities/pallet.entity';
 import { FrutasEmbalagem } from 'src/frutas-embalagens/entities/frutas-embalagen.entity';
 import {
   Column,
@@ -7,6 +7,7 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity()
@@ -20,8 +21,14 @@ export class PalletFruta {
   @CreateDateColumn()
   createdAt?: Date;
 
-  @CreateDateColumn()
+  @UpdateDateColumn()
   updatedAt?: Date;
+
+  @Column({ nullable: false })
+  idPallet: number;
+
+  @Column({ nullable: false })
+  idFrutasEmbalagem: number;
 
   @ManyToOne(
     () => FrutasEmbalagem,
@@ -33,7 +40,7 @@ export class PalletFruta {
   @JoinColumn({ name: 'idFrutasEmbalagem' })
   frutasEmbalagem: FrutasEmbalagem;
 
-  @ManyToOne(() => Carga, { nullable: false })
-  @JoinColumn({ name: 'idCarga' })
-  carga: Carga;
+  @ManyToOne(() => Pallet, (pallet) => pallet.palletFrutas, { nullable: false })
+  @JoinColumn({ name: 'idPallet' })
+  pallet: Pallet;
 }

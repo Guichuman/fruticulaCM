@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 // Tipo para motorista
 type Driver = {
@@ -109,6 +110,7 @@ export default function DriversPage() {
   };
 
   return (
+    <ProtectedRoute>
     <div className="min-h-screen bg-background">
       <NavBar />
       <div className="container mx-auto py-10">
@@ -287,5 +289,6 @@ export default function DriversPage() {
         </Card>
       </div>
     </div>
+    </ProtectedRoute>
   );
 }

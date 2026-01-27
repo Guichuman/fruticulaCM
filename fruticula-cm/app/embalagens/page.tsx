@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 type Embalagem = {
   id: number;
@@ -94,6 +95,7 @@ export default function EmbalagensPage() {
   };
 
   return (
+    <ProtectedRoute>
     <div className="min-h-screen bg-background">
       <NavBar />
       <div className="container mx-auto py-10">
@@ -269,5 +271,6 @@ export default function EmbalagensPage() {
         </Card>
       </div>
     </div>
+    </ProtectedRoute>
   );
 }

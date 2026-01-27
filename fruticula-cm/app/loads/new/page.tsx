@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 type TruckType = {
   id: number;
@@ -121,8 +122,8 @@ export default function NewLoadPage() {
     try {
       const loadData = {
         data: date,
-        caminhaoId: Number.parseInt(selectedTruckId),
-        motoristaId: Number.parseInt(selectedDriverId),
+        idCaminhao: Number.parseInt(selectedTruckId),
+        idMotorista: Number.parseInt(selectedDriverId),
         status: "carregando",
         totalBlocos: 0,
         maxCaixas:
@@ -167,6 +168,7 @@ export default function NewLoadPage() {
   );
 
   return (
+    <ProtectedRoute>
     <div className="min-h-screen bg-background">
       <NavBar />
       <div className="container mx-auto py-10">
@@ -305,5 +307,6 @@ export default function NewLoadPage() {
         </div>
       </div>
     </div>
+    </ProtectedRoute>
   );
 }

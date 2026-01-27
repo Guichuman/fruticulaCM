@@ -17,6 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 type Embalagem = {
   id: number;
@@ -166,7 +167,8 @@ export default function EditEmbalagemPage() {
 
   if (isLoadingData) {
     return (
-      <div className="min-h-screen bg-background">
+      <ProtectedRoute>
+    <div className="min-h-screen bg-background">
         <NavBar />
         <div className="container mx-auto py-10">
           <div className="flex items-center justify-center">
@@ -179,6 +181,7 @@ export default function EditEmbalagemPage() {
           </div>
         </div>
       </div>
+    </ProtectedRoute>
     );
   }
 
@@ -257,5 +260,6 @@ export default function EditEmbalagemPage() {
         </div>
       </div>
     </div>
+    </ProtectedRoute>
   );
 }

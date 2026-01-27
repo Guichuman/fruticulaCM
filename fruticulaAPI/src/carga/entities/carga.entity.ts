@@ -1,6 +1,6 @@
 import { Caminhao } from 'src/caminhao/entities/caminhao.entity';
 import { Motorista } from 'src/motorista/entities/motorista.entity';
-import { PalletFruta } from 'src/pallet-frutas/entities/pallet-fruta.entity';
+import { Pallet } from 'src/pallet/entities/pallet.entity';
 import {
   Column,
   CreateDateColumn,
@@ -9,6 +9,7 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity()
@@ -28,7 +29,7 @@ export class Carga {
   @CreateDateColumn()
   createdAt?: Date;
 
-  @CreateDateColumn()
+  @UpdateDateColumn()
   updatedAt?: Date;
 
   @Column({ nullable: false })
@@ -45,6 +46,6 @@ export class Carga {
   @JoinColumn({ name: 'idMotorista' })
   motorista: Motorista;
 
-  @OneToMany(() => PalletFruta, (pallet) => pallet.carga)
-  pallets: PalletFruta[];
+  @OneToMany(() => Pallet, (pallet) => pallet.carga)
+  pallets: Pallet[];
 }

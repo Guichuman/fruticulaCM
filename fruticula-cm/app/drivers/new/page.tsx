@@ -17,6 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 type FieldErrors = {
   nome?: string;
@@ -175,6 +176,7 @@ export default function NewDriverPage() {
   };
 
   return (
+    <ProtectedRoute>
     <div className="min-h-screen bg-background">
       <NavBar />
       <div className="container mx-auto py-10">
@@ -305,5 +307,6 @@ export default function NewDriverPage() {
         </div>
       </div>
     </div>
+    </ProtectedRoute>
   );
 }

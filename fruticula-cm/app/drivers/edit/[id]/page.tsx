@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 type FieldErrors = {
   nome?: string;
@@ -212,7 +213,8 @@ export default function EditDriverPage() {
 
   if (isLoadingData) {
     return (
-      <div className="min-h-screen bg-background">
+      <ProtectedRoute>
+    <div className="min-h-screen bg-background">
         <NavBar />
         <div className="container mx-auto py-10">
           <div className="flex items-center justify-center">
@@ -225,6 +227,7 @@ export default function EditDriverPage() {
           </div>
         </div>
       </div>
+    </ProtectedRoute>
     );
   }
 
@@ -357,5 +360,6 @@ export default function EditDriverPage() {
         </div>
       </div>
     </div>
+    </ProtectedRoute>
   );
 }

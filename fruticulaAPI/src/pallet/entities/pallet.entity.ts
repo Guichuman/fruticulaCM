@@ -1,21 +1,23 @@
-import { Caminhao } from 'src/caminhao/entities/caminhao.entity';
+import { Carga } from 'src/carga/entities/carga.entity';
+import { PalletFruta } from 'src/pallet-frutas/entities/pallet-fruta.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
   JoinColumn,
-  OneToOne,
+  ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
-import { LadoPalletEnum } from '../enum/LadoPalletEnum';
 
 @Entity()
 export class Pallet {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ nullable: false })
-  lado: LadoPalletEnum;
+  @Column({ type: 'varchar', length: 100, nullable: false })
+  lado: string;
 
   @Column({ nullable: false })
   bloco: number;
@@ -23,13 +25,16 @@ export class Pallet {
   @CreateDateColumn()
   createdAt?: Date;
 
-  @CreateDateColumn()
+  @UpdateDateColumn()
   updatedAt?: Date;
 
   @Column({ nullable: false })
-  idCaminhao: number;
+  idCarga: number;
 
-  @OneToOne(() => Caminhao)
-  @JoinColumn({ name: 'idCaminhao' })
-  caminhao: Caminhao;
+  @ManyToOne(() => Carga, (carga) => carga.pallets, { nullable: false })
+  @JoinColumn({ name: 'idCarga' })
+  carga: Carga;
+
+  @OneToMany(() => PalletFruta, (palletFruta) => palletFruta.pallet)
+  palletFrutas: PalletFruta[];
 }
