@@ -8,7 +8,6 @@ import { FrutaModule } from 'src/fruta/fruta.module';
 import { CaminhaoModule } from 'src/caminhao/caminhao.module';
 import { MotoristaModule } from 'src/motorista/motorista.module';
 import { CargaModule } from 'src/carga/carga.module';
-import { EmbalagemModule } from 'src/embalagem/embalagem.module';
 import { UsuarioModule } from 'src/usuario/usuario.module';
 import { PalletModule } from 'src/pallet/pallet.module';
 import { PalletFrutasModule } from 'src/pallet-frutas/pallet-frutas.module';
@@ -32,6 +31,9 @@ import { TipoFrutaEmbalagemModule } from 'src/tipo-fruta-embalagem/tipo-fruta-em
         database: configService.get<string>('DB_DATABASE'),
         autoLoadEntities: true,
         synchronize: false,
+        ssl: process.env.NODE_ENV === 'production'
+          ? { rejectUnauthorized: false }
+          : false,
       }),
       inject: [ConfigService],
     }),
@@ -41,7 +43,6 @@ import { TipoFrutaEmbalagemModule } from 'src/tipo-fruta-embalagem/tipo-fruta-em
     CaminhaoModule,
     MotoristaModule,
     CargaModule,
-    EmbalagemModule,
     PalletModule,
     PalletFrutasModule,
     TipoFrutaModule,

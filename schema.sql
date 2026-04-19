@@ -70,41 +70,7 @@ CREATE TABLE IF NOT EXISTS frutas (
 );
 
 -- -------------------------------------------------------------
--- 5. EMBALAGENS
--- -------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS embalagens (
-    id              SERIAL          PRIMARY KEY,
-    nome            VARCHAR(255)    NOT NULL UNIQUE,
-    criado_em       TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
-    atualizado_em   TIMESTAMPTZ     NOT NULL DEFAULT NOW()
-);
-
--- -------------------------------------------------------------
--- 6. FRUTAS_EMBALAGENS  (tabela legada — mantida por compatibilidade)
--- -------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS frutas_embalagens (
-    id              SERIAL          PRIMARY KEY,
-    peso            FLOAT           NOT NULL,
-    sku             INTEGER         NOT NULL,
-    tipo            VARCHAR(55)     NOT NULL,
-    criado_em       TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
-    atualizado_em   TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
-    id_fruta        INTEGER         NOT NULL,
-    id_embalagem    INTEGER         NOT NULL,
-
-    CONSTRAINT frutas_embalagens_fruta_fk
-        FOREIGN KEY (id_fruta)
-        REFERENCES frutas (id)
-        ON DELETE NO ACTION,
-
-    CONSTRAINT frutas_embalagens_embalagem_fk
-        FOREIGN KEY (id_embalagem)
-        REFERENCES embalagens (id)
-        ON DELETE NO ACTION
-);
-
--- -------------------------------------------------------------
--- 7. TIPOS_FRUTA
+-- 5. TIPOS_FRUTA  (anteriormente seção 7)
 -- -------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS tipos_fruta (
     id              SERIAL          PRIMARY KEY,
@@ -120,7 +86,7 @@ CREATE TABLE IF NOT EXISTS tipos_fruta (
 );
 
 -- -------------------------------------------------------------
--- 8. TIPO_FRUTA_EMBALAGENS
+-- 6. TIPO_FRUTA_EMBALAGENS
 -- -------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS tipo_fruta_embalagens (
     id              SERIAL          PRIMARY KEY,
@@ -137,7 +103,7 @@ CREATE TABLE IF NOT EXISTS tipo_fruta_embalagens (
 );
 
 -- -------------------------------------------------------------
--- 9. CARGAS
+-- 7. CARGAS
 -- -------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS cargas (
     id              SERIAL          PRIMARY KEY,
@@ -163,7 +129,7 @@ CREATE TABLE IF NOT EXISTS cargas (
 );
 
 -- -------------------------------------------------------------
--- 10. PALLETS
+-- 8. PALLETS
 -- -------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS pallets (
     id              SERIAL          PRIMARY KEY,
@@ -182,7 +148,7 @@ CREATE TABLE IF NOT EXISTS pallets (
 );
 
 -- -------------------------------------------------------------
--- 11. PALLET_FRUTAS
+-- 9. PALLET_FRUTAS
 -- -------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS pallet_frutas (
     id                          SERIAL      PRIMARY KEY,
@@ -207,8 +173,6 @@ CREATE TABLE IF NOT EXISTS pallet_frutas (
 -- ÍNDICES NAS COLUNAS DE FK (performance em JOINs)
 -- =============================================================
 CREATE INDEX IF NOT EXISTS idx_caminhoes_motorista       ON caminhoes (id_motorista);
-CREATE INDEX IF NOT EXISTS idx_frutas_embalagens_fruta   ON frutas_embalagens (id_fruta);
-CREATE INDEX IF NOT EXISTS idx_frutas_embalagens_embal   ON frutas_embalagens (id_embalagem);
 CREATE INDEX IF NOT EXISTS idx_tipos_fruta_fruta         ON tipos_fruta (id_fruta);
 CREATE INDEX IF NOT EXISTS idx_tipo_fruta_emb_tipo       ON tipo_fruta_embalagens (id_tipo_fruta);
 CREATE INDEX IF NOT EXISTS idx_cargas_caminhao           ON cargas (id_caminhao);
