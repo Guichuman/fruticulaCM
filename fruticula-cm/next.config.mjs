@@ -16,6 +16,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  transpilePackages: ['jspdf', 'jspdf-autotable', 'fflate'],
   experimental: {
     webpackBuildWorker: true,
     parallelServerBuildTraces: true,

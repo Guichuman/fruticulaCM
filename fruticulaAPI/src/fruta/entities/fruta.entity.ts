@@ -1,26 +1,27 @@
-import { FrutasEmbalagem } from 'src/frutas-embalagens/entities/frutas-embalagen.entity';
+import { TipoFruta } from 'src/tipo-fruta/entities/tipo-fruta.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
   OneToMany,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 
-@Entity()
+@Entity('frutas')
 export class Fruta {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 255, unique: true })
   nome: string;
 
-  @CreateDateColumn()
-  createdAt?: Date;
+  @CreateDateColumn({ name: 'criado_em' })
+  criadoEm?: Date;
 
-  @CreateDateColumn()
-  updatedAt?: Date;
+  @UpdateDateColumn({ name: 'atualizado_em' })
+  atualizadoEm?: Date;
 
-  @OneToMany(() => FrutasEmbalagem, (fe) => fe.fruta)
-  frutasEmbalagens: FrutasEmbalagem[];
+  @OneToMany(() => TipoFruta, (tf) => tf.fruta)
+  tiposFruta: TipoFruta[];
 }

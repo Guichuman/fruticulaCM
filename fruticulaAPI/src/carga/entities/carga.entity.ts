@@ -1,7 +1,9 @@
 import { Caminhao } from 'src/caminhao/entities/caminhao.entity';
 import { Motorista } from 'src/motorista/entities/motorista.entity';
 import { Pallet } from 'src/pallet/entities/pallet.entity';
+import { StatusCargaEnum } from 'src/compartilhado/enums/status-carga.enum';
 import {
+  Check,
   Column,
   CreateDateColumn,
   Entity,
@@ -12,38 +14,39 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity()
+@Entity('cargas')
+@Check("status IN ('F', 'C', 'V')")
 export class Carga {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ name: 'total_blocos' })
   totalBlocos: number;
 
-  @Column()
+  @Column({ name: 'max_caixas' })
   maxCaixas: number;
 
-  @Column({ type: 'varchar', length: 55 })
-  status: string;
+  @Column({ type: 'char', length: 1, default: StatusCargaEnum.CARREGANDO })
+  status: StatusCargaEnum;
 
-  @CreateDateColumn()
-  createdAt?: Date;
+  @CreateDateColumn({ name: 'criado_em' })
+  criadoEm?: Date;
 
-  @UpdateDateColumn()
-  updatedAt?: Date;
+  @UpdateDateColumn({ name: 'atualizado_em' })
+  atualizadoEm?: Date;
 
-  @Column({ nullable: false })
+  @Column({ name: 'id_caminhao', nullable: false })
   idCaminhao: number;
 
-  @Column({ nullable: false })
+  @Column({ name: 'id_motorista', nullable: false })
   idMotorista: number;
 
   @ManyToOne(() => Caminhao, { nullable: false, onDelete: 'RESTRICT' })
-  @JoinColumn({ name: 'idCaminhao' })
+  @JoinColumn({ name: 'id_caminhao' })
   caminhao: Caminhao;
 
   @ManyToOne(() => Motorista, { nullable: false, onDelete: 'RESTRICT' })
-  @JoinColumn({ name: 'idMotorista' })
+  @JoinColumn({ name: 'id_motorista' })
   motorista: Motorista;
 
   @OneToMany(() => Pallet, (pallet) => pallet.carga)

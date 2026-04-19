@@ -6,37 +6,54 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
-import { FrutaService } from './fruta.service';
-import { CreateFrutaDto } from './dto/create-fruta.dto';
-import { UpdateFrutaDto } from './dto/update-fruta.dto';
+import { JwtAutenticacaoGuard } from 'src/autenticacao/guards/jwt-autenticacao.guard';
+import { FrutaConsultaService } from './fruta-consulta.service';
+import { CriarFrutaUseCase } from './casos-de-uso/criar-fruta.caso-de-uso';
+import { AtualizarFrutaUseCase } from './casos-de-uso/atualizar-fruta.caso-de-uso';
+import { RemoverFrutaUseCase } from './casos-de-uso/remover-fruta.caso-de-uso';
+import { CriarFrutaDto } from './dto/criar-fruta.dto';
+import { AtualizarFrutaDto } from './dto/atualizar-fruta.dto';
+import { NomeVO } from 'src/compartilhado/value-objects/nome.vo';
 
+@UseGuards(JwtAutenticacaoGuard)
 @Controller('fruta')
 export class FrutaController {
-  constructor(private readonly frutaService: FrutaService) {}
+  constructor(
+    private readonly consultaService: FrutaConsultaService,
+    private readonly criarUseCase: CriarFrutaUseCase,
+    private readonly atualizarUseCase: AtualizarFrutaUseCase,
+    private readonly removerUseCase: RemoverFrutaUseCase,
+  ) {}
 
   @Post()
-  create(@Body() createFrutaDto: CreateFrutaDto) {
-    return this.frutaService.create(createFrutaDto);
+  criar(@Body() dto: CriarFrutaDto) {
+    NomeVO.criar(dto.nome);
+    return this.criarUseCase.executar(dto);
   }
 
   @Get()
-  findAll() {
-    return this.frutaService.findAll();
+  buscarTodos() {
+    return this.consultaService.buscarTodos();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.frutaService.findOneWithEmbalagens(+id);
+  buscarPorId(@Param('id') id: string) {
+    return this.consultaService.buscarPorId(+id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateFrutaDto: UpdateFrutaDto) {
-    return this.frutaService.update(+id, updateFrutaDto);
+  atualizar(@Param('id') id: string, @Body() dto: AtualizarFrutaDto) {
+    if (dto.nome) NomeVO.criar(dto.nome);
+    return this.atualizarUseCase.executar(+id, dto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.frutaService.remove(+id);
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remover(@Param('id') id: string) {
+    return this.removerUseCase.executar(+id);
   }
 }

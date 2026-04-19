@@ -1,5 +1,5 @@
 import { Pallet } from 'src/pallet/entities/pallet.entity';
-import { FrutasEmbalagem } from 'src/frutas-embalagens/entities/frutas-embalagen.entity';
+import { TipoFrutaEmbalagem } from 'src/tipo-fruta-embalagem/entities/tipo-fruta-embalagem.entity';
 import {
   Column,
   CreateDateColumn,
@@ -10,37 +10,34 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity()
+@Entity('pallet_frutas')
 export class PalletFruta {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ nullable: false })
+  @Column({ name: 'quantidade_caixa', nullable: false })
   quantidadeCaixa: number;
 
-  @CreateDateColumn()
-  createdAt?: Date;
+  @CreateDateColumn({ name: 'criado_em' })
+  criadoEm?: Date;
 
-  @UpdateDateColumn()
-  updatedAt?: Date;
+  @UpdateDateColumn({ name: 'atualizado_em' })
+  atualizadoEm?: Date;
 
-  @Column({ nullable: false })
+  @Column({ name: 'id_pallet', nullable: false })
   idPallet: number;
 
-  @Column({ nullable: false })
-  idFrutasEmbalagem: number;
+  @Column({ name: 'id_tipo_fruta_embalagem', nullable: false })
+  idTipoFrutaEmbalagem: number;
 
-  @ManyToOne(
-    () => FrutasEmbalagem,
-    (frutasEmbalagem) => frutasEmbalagem.palletFrutas,
-    {
-      nullable: false,
-    },
-  )
-  @JoinColumn({ name: 'idFrutasEmbalagem' })
-  frutasEmbalagem: FrutasEmbalagem;
+  @ManyToOne(() => TipoFrutaEmbalagem, {
+    nullable: false,
+    onDelete: 'RESTRICT',
+  })
+  @JoinColumn({ name: 'id_tipo_fruta_embalagem' })
+  tipoFrutaEmbalagem: TipoFrutaEmbalagem;
 
   @ManyToOne(() => Pallet, (pallet) => pallet.palletFrutas, { nullable: false })
-  @JoinColumn({ name: 'idPallet' })
+  @JoinColumn({ name: 'id_pallet' })
   pallet: Pallet;
 }

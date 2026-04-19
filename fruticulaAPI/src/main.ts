@@ -1,11 +1,27 @@
 import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app/app.module';
 
-async function bootstrap() {
+async function inicializar() {
   const app = await NestFactory.create(AppModule);
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
+
   app.enableCors({
-    origin: '*',
+    origin: process.env.FRONTEND_URL || 'http://localhost:3001',
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
   });
-  await app.listen(3000);
+
+  const porta = process.env.PORTA || 3000;
+  await app.listen(porta);
+  console.log(`🚀 Frutícola CM API rodando na porta ${porta}`);
 }
-bootstrap();
+inicializar();

@@ -1,5 +1,7 @@
 import { Motorista } from 'src/motorista/entities/motorista.entity';
+import { StatusCaminhaoEnum } from 'src/compartilhado/enums/status-caminhao.enum';
 import {
+  Check,
   Column,
   CreateDateColumn,
   Entity,
@@ -7,36 +9,44 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
   RelationId,
+  UpdateDateColumn,
 } from 'typeorm';
 
-@Entity()
+@Entity('caminhoes')
+@Check("status IN ('A', 'I')")
+@Check("pallet_baixo IN ('S', 'N')")
 export class Caminhao {
-  constructor() {}
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 10, unique: true })
   placa: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 32 })
+  modelo: string;
+
+  @Column({ name: 'qtd_blocos' })
   qtdBlocos: number;
 
-  @Column({ type: 'varchar', length: 55 })
-  status: string;
+  @Column({ type: 'char', length: 1, default: StatusCaminhaoEnum.ATIVO })
+  status: StatusCaminhaoEnum;
 
-  @CreateDateColumn()
-  createdAt?: Date;
+  @Column({ name: 'pallet_baixo', type: 'char', length: 1, default: 'N' })
+  palletBaixo: string;
 
-  @CreateDateColumn()
-  updatedAt?: Date;
+  @CreateDateColumn({ name: 'criado_em' })
+  criadoEm?: Date;
+
+  @UpdateDateColumn({ name: 'atualizado_em' })
+  atualizadoEm?: Date;
 
   @ManyToOne(() => Motorista, (motorista) => motorista.caminhoes, {
     nullable: true,
     onDelete: 'SET NULL',
   })
-  @JoinColumn({ name: 'motoristaId' })
+  @JoinColumn({ name: 'id_motorista' })
   motorista: Motorista;
 
   @RelationId((c: Caminhao) => c.motorista)
-  motoristaId: number | null;
+  idMotorista: number | null;
 }

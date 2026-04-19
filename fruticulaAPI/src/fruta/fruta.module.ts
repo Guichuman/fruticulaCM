@@ -1,19 +1,23 @@
-import { Module, forwardRef } from '@nestjs/common';
-import { FrutaService } from './fruta.service';
-import { FrutaController } from './fruta.controller';
+import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AutenticacaoModule } from 'src/autenticacao/autenticacao.module';
 import { Fruta } from './entities/fruta.entity';
-import { Embalagem } from 'src/embalagem/entities/embalagem.entity';
-import { FrutasEmbalagem } from 'src/frutas-embalagens/entities/frutas-embalagen.entity';
-import { FrutasEmbalagensModule } from 'src/frutas-embalagens/frutas-embalagens.module';
+import { PalletFruta } from 'src/pallet-frutas/entities/pallet-fruta.entity';
+import { FrutaController } from './fruta.controller';
+import { FrutaConsultaService } from './fruta-consulta.service';
+import { CriarFrutaUseCase } from './casos-de-uso/criar-fruta.caso-de-uso';
+import { AtualizarFrutaUseCase } from './casos-de-uso/atualizar-fruta.caso-de-uso';
+import { RemoverFrutaUseCase } from './casos-de-uso/remover-fruta.caso-de-uso';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Fruta, Embalagem, FrutasEmbalagem]),
-    forwardRef(() => FrutasEmbalagensModule),
-  ],
+  imports: [TypeOrmModule.forFeature([Fruta, PalletFruta]), AutenticacaoModule],
   controllers: [FrutaController],
-  providers: [FrutaService],
-  exports: [TypeOrmModule],
+  providers: [
+    FrutaConsultaService,
+    CriarFrutaUseCase,
+    AtualizarFrutaUseCase,
+    RemoverFrutaUseCase,
+  ],
+  exports: [FrutaConsultaService, TypeOrmModule],
 })
 export class FrutaModule {}

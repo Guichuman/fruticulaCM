@@ -1,31 +1,23 @@
 import { Module } from '@nestjs/common';
-import { CargaController } from './carga.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CargaConsultaService } from './carga-consulta.service';
+import { CriarCargaUseCase } from './casos-de-uso/criar-carga.caso-de-uso';
+import { AtualizarCargaUseCase } from './casos-de-uso/atualizar-carga.caso-de-uso';
+import { RemoverCargaUseCase } from './casos-de-uso/remover-carga.caso-de-uso';
+import { CargaController } from './carga.controller';
+import { RomaneioService } from './romaneio.service';
 import { Carga } from './entities/carga.entity';
 import { Caminhao } from 'src/caminhao/entities/caminhao.entity';
-import { CargaService } from './carga.service';
 import { Motorista } from 'src/motorista/entities/motorista.entity';
-import { Pallet } from 'src/pallet/entities/pallet.entity';
-import { PalletFruta } from 'src/pallet-frutas/entities/pallet-fruta.entity';
-import { FrutasEmbalagem } from 'src/frutas-embalagens/entities/frutas-embalagen.entity';
-import { Fruta } from 'src/fruta/entities/fruta.entity';
-import { Embalagem } from 'src/embalagem/entities/embalagem.entity';
+import { AutenticacaoModule } from 'src/autenticacao/autenticacao.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      Carga,
-      Caminhao,
-      Motorista,
-      Pallet,
-      PalletFruta,
-      FrutasEmbalagem,
-      Fruta,
-      Embalagem,
-    ]),
+    TypeOrmModule.forFeature([Carga, Caminhao, Motorista]),
+    AutenticacaoModule,
   ],
   controllers: [CargaController],
-  providers: [CargaService],
-  exports: [TypeOrmModule, CargaService],
+  providers: [CargaConsultaService, CriarCargaUseCase, AtualizarCargaUseCase, RemoverCargaUseCase, RomaneioService],
+  exports: [CargaConsultaService, TypeOrmModule],
 })
 export class CargaModule {}

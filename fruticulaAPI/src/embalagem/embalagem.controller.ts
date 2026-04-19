@@ -6,40 +6,54 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
-import { EmbalagemService } from './embalagem.service';
-import { CreateEmbalagemDto } from './dto/create-embalagem.dto';
-import { UpdateEmbalagemDto } from './dto/update-embalagem.dto';
+import { JwtAutenticacaoGuard } from 'src/autenticacao/guards/jwt-autenticacao.guard';
+import { EmbalagemConsultaService } from './embalagem-consulta.service';
+import { CriarEmbalagemUseCase } from './casos-de-uso/criar-embalagem.caso-de-uso';
+import { AtualizarEmbalagemUseCase } from './casos-de-uso/atualizar-embalagem.caso-de-uso';
+import { RemoverEmbalagemUseCase } from './casos-de-uso/excluir-embalagem.caso-de-uso';
+import { CriarEmbalagemDto } from './dto/criar-embalagem.dto';
+import { AtualizarEmbalagemDto } from './dto/atualizar-embalagem.dto';
+import { NomeVO } from 'src/compartilhado/value-objects/nome.vo';
 
+@UseGuards(JwtAutenticacaoGuard)
 @Controller('embalagem')
 export class EmbalagemController {
-  constructor(private readonly embalagemService: EmbalagemService) {}
+  constructor(
+    private readonly consultaService: EmbalagemConsultaService,
+    private readonly criarUseCase: CriarEmbalagemUseCase,
+    private readonly atualizarUseCase: AtualizarEmbalagemUseCase,
+    private readonly removerUseCase: RemoverEmbalagemUseCase,
+  ) {}
 
   @Post()
-  create(@Body() createEmbalagemDto: CreateEmbalagemDto) {
-    return this.embalagemService.create(createEmbalagemDto);
+  criar(@Body() dto: CriarEmbalagemDto) {
+    NomeVO.criar(dto.nome);
+    return this.criarUseCase.executar(dto);
   }
 
   @Get()
-  findAll() {
-    return this.embalagemService.findAll();
+  buscarTodos() {
+    return this.consultaService.buscarTodos();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.embalagemService.findOne(+id);
+  buscarPorId(@Param('id') id: string) {
+    return this.consultaService.buscarPorId(+id);
   }
 
   @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateEmbalagemDto: UpdateEmbalagemDto,
-  ) {
-    return this.embalagemService.update(+id, updateEmbalagemDto);
+  atualizar(@Param('id') id: string, @Body() dto: AtualizarEmbalagemDto) {
+    if (dto.nome) NomeVO.criar(dto.nome);
+    return this.atualizarUseCase.executar(+id, dto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.embalagemService.remove(+id);
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remover(@Param('id') id: string) {
+    return this.removerUseCase.executar(+id);
   }
 }

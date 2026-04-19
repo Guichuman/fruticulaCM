@@ -2,25 +2,25 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { isAuthenticated } from "@/lib/auth";
+import { estaAutenticado } from "@/lib/auth";
 
-interface ProtectedRouteProps {
+interface RotaProtegidaProps {
   children: React.ReactNode;
 }
 
-export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const router = useRouter();
-  const [isChecking, setIsChecking] = useState(true);
+export function ProtectedRoute({ children }: RotaProtegidaProps) {
+  const roteador = useRouter();
+  const [verificando, setVerificando] = useState(true);
 
   useEffect(() => {
-    if (!isAuthenticated()) {
-      router.push("/login");
+    if (!estaAutenticado()) {
+      roteador.push("/login");
     } else {
-      setIsChecking(false);
+      setVerificando(false);
     }
-  }, [router]);
+  }, [roteador]);
 
-  if (isChecking) {
+  if (verificando) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">

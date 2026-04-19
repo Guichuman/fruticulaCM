@@ -14,52 +14,47 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { LogIn, Loader2 } from "lucide-react";
+import { api } from "@/lib/api";
+import { salvarSessao, Usuario } from "@/lib/auth";
 
-export default function LoginPage() {
-  const router = useRouter();
-  const [username, setUsername] = useState("");
+interface RespostaLogin {
+  token: string;
+  usuario: Usuario;
+}
+
+export default function PaginaLogin() {
+  const roteador = useRouter();
+  const [nomeUsuario, setNomeUsuario] = useState("");
   const [senha, setSenha] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [carregando, setCarregando] = useState(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const aoFazerLogin = async (evento: React.FormEvent) => {
+    evento.preventDefault();
 
-    if (!username || !senha) {
+    if (!nomeUsuario || !senha) {
       toast.error("Por favor, preencha todos os campos");
       return;
     }
 
-    setIsLoading(true);
+    setCarregando(true);
 
     try {
-      const response = await fetch("http://localhost:3000/usuario/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, senha }),
-      });
+      const resposta = await api.post<RespostaLogin>(
+        "/usuario/login",
+        { username: nomeUsuario, senha },
+        true,
+      );
 
-      if (response.ok) {
-        const userData = await response.json();
-        
-        // Salvar dados do usuário no localStorage
-        localStorage.setItem("usuario", JSON.stringify(userData));
-        localStorage.setItem("isLoggedIn", "true");
+      salvarSessao(resposta.token, resposta.usuario);
 
-        toast.success(`Bem-vindo, ${userData.nome}!`);
-        
-        // Redirecionar para a página inicial
-        router.push("/");
-      } else {
-        const errorData = await response.json();
-        toast.error(errorData.message || "Credenciais inválidas");
-      }
-    } catch (error) {
-      console.error("Erro ao fazer login:", error);
-      toast.error("Erro de conexão. Verifique se o servidor está rodando.");
+      toast.success(`Bem-vindo, ${resposta.usuario.nome}!`);
+      roteador.push("/");
+    } catch (erro) {
+      const mensagemErro =
+        erro instanceof Error ? erro.message : "Credenciais inválidas";
+      toast.error(mensagemErro);
     } finally {
-      setIsLoading(false);
+      setCarregando(false);
     }
   };
 
@@ -80,18 +75,18 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className="space-y-6">
+          <form onSubmit={aoFazerLogin} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="username" className="text-base font-medium">
+              <Label htmlFor="nomeUsuario" className="text-base font-medium">
                 Usuário
               </Label>
               <Input
-                id="username"
+                id="nomeUsuario"
                 type="text"
                 placeholder="Digite seu usuário"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                disabled={isLoading}
+                value={nomeUsuario}
+                onChange={(e) => setNomeUsuario(e.target.value)}
+                disabled={carregando}
                 className="h-11"
                 autoComplete="username"
               />
@@ -107,7 +102,7 @@ export default function LoginPage() {
                 placeholder="Digite sua senha"
                 value={senha}
                 onChange={(e) => setSenha(e.target.value)}
-                disabled={isLoading}
+                disabled={carregando}
                 className="h-11"
                 autoComplete="current-password"
               />
@@ -116,9 +111,9 @@ export default function LoginPage() {
             <Button
               type="submit"
               className="w-full h-11 text-base font-semibold"
-              disabled={isLoading}
+              disabled={carregando}
             >
-              {isLoading ? (
+              {carregando ? (
                 <>
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                   Entrando...
@@ -133,9 +128,7 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-6 text-center text-sm text-muted-foreground">
-            <p>
-              Sistema de Gerenciamento de Entregas
-            </p>
+            <p>Sistema de Gerenciamento de Entregas</p>
           </div>
         </CardContent>
       </Card>

@@ -1,240 +1,283 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { NavBar } from "@/components/nav-bar"
-import { Layers, Plus, Trash2, Save } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { NavBar } from "@/components/nav-bar";
+import { Layers, Plus, Edit, Trash2, Search, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ConfirmacaoExclusao } from "@/components/confirmacao-exclusao";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { api } from "@/lib/api";
 
-type FruitItem = {
-  id: number
-  name: string
-  type: string
-  quantity: number
-}
+type Carga = {
+  id: number;
+  numeroCarga?: number;
+  destino?: string;
+};
+
+type Pallet = {
+  id: number;
+  lado: string;
+  bloco: number;
+  idCarga: number;
+  carga?: Carga;
+};
 
 export default function PalletsPage() {
-  const [fruitItems, setFruitItems] = useState<FruitItem[]>([])
-  const [nextId, setNextId] = useState(1)
-  const [selectedFruit, setSelectedFruit] = useState("")
-  const [fruitType, setFruitType] = useState("")
-  const [quantity, setQuantity] = useState("")
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const roteador = useRouter();
+  const [pallets, setPallets] = useState<Pallet[]>([]);
+  const [carregando, setCarregando] = useState(true);
+  const [termoPesquisa, setTermoPesquisa] = useState("");
+  const [confirmacao, setConfirmacao] = useState<Pallet | null>(null);
+  const [excluindoId, setExcluindoId] = useState<number | null>(null);
+  const [navegandoPara, setNavegandoPara] = useState<number | null>(null);
+  const [paginaAtual, setPaginaAtual] = useState(1);
+  const itensPorPagina = 10;
 
-  const addFruitItem = () => {
-    if (selectedFruit && quantity) {
-      const newItem: FruitItem = {
-        id: nextId,
-        name: selectedFruit,
-        type: fruitType,
-        quantity: Number.parseInt(quantity, 10),
+  const palletsFiltrados = pallets.filter((pallet) =>
+    pallet.lado.toLowerCase().includes(termoPesquisa.toLowerCase()) ||
+    String(pallet.bloco).includes(termoPesquisa) ||
+    String(pallet.idCarga).includes(termoPesquisa)
+  );
+
+  const totalPaginas = Math.ceil(palletsFiltrados.length / itensPorPagina);
+  const indiceInicio = (paginaAtual - 1) * itensPorPagina;
+  const indiceFim = indiceInicio + itensPorPagina;
+  const palletsAtuais = palletsFiltrados.slice(indiceInicio, indiceFim);
+
+  useEffect(() => {
+    setPaginaAtual(1);
+  }, [termoPesquisa]);
+
+  useEffect(() => {
+    const buscarPallets = async () => {
+      try {
+        const dados = await api.get<Pallet[]>("/pallet");
+        setPallets(dados);
+      } catch (erro) {
+        console.error("Erro ao buscar pallets:", erro);
+        toast.error("Erro ao carregar pallets");
+      } finally {
+        setCarregando(false);
       }
+    };
 
-      setFruitItems([...fruitItems, newItem])
-      setNextId(nextId + 1)
+    buscarPallets();
+  }, []);
 
-      setSelectedFruit("")
-      setFruitType("")
-      setQuantity("")
-
-      setIsDialogOpen(false)
+  const aoExcluir = async () => {
+    if (!confirmacao) return;
+    const { id } = confirmacao;
+    setExcluindoId(id);
+    try {
+      await api.delete(`/pallet/${id}`);
+      setPallets((prev) => prev.filter((p) => p.id !== id));
+      toast.success(`Pallet #${id} excluído com sucesso`);
+      setConfirmacao(null);
+    } catch (erro) {
+      toast.error("Erro ao excluir pallet");
+    } finally {
+      setExcluindoId(null);
     }
-  }
-
-  const removeFruitItem = (id: number) => {
-    setFruitItems(fruitItems.filter((item) => item.id !== id))
-  }
+  };
 
   return (
     <ProtectedRoute>
-    <div className="min-h-screen bg-background">
-      <NavBar />
-      <div className="container mx-auto py-10">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold text-primary">Pallets</h1>
-          <Button className="bg-primary hover:bg-primary/90">
-            <Plus className="mr-2 h-4 w-4" />
-            Adicionar Pallet
-          </Button>
-        </div>
-
-        <Card className="mb-6">
-          <CardHeader className="bg-primary/10">
-            <CardTitle className="flex items-center text-primary">
-              <Layers className="mr-2 h-5 w-5" />
-              Cadastrar Romaneio
-            </CardTitle>
-            <CardDescription>Crie um novo romaneio de frutas</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <div className="space-y-2">
-                <Label htmlFor="romaneio">Nº do Romaneio</Label>
-                <Input id="romaneio" placeholder="Digite o número do romaneio" />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="date">Data</Label>
-                <Input id="date" type="date" />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="driver">Motorista</Label>
-                <Select>
-                  <SelectTrigger id="driver">
-                    <SelectValue placeholder="Selecione o motorista" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="driver1">João Silva</SelectItem>
-                    <SelectItem value="driver2">Maria Oliveira</SelectItem>
-                    <SelectItem value="driver3">Carlos Santos</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="plate">Placa Nº</Label>
-                <Input id="plate" placeholder="Digite a placa do veículo" />
-              </div>
+      <div className="min-h-screen bg-background">
+        <NavBar />
+        <div className="container mx-auto py-10">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-primary">Pallets</h1>
+              <p className="text-muted-foreground">
+                Gerencie os pallets de cargas
+              </p>
             </div>
-
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium">Discriminação de Frutas</h3>
-                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="bg-primary hover:bg-primary/90">
-                      <Plus className="mr-2 h-4 w-4" />
-                      Adicionar Fruta
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Adicionar Fruta ao Pallet</DialogTitle>
-                      <DialogDescription>Selecione a fruta e informe a quantidade.</DialogDescription>
-                    </DialogHeader>
-
-                    <div className="grid gap-4 py-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="fruit-select">Fruta</Label>
-                        <Select value={selectedFruit} onValueChange={setSelectedFruit}>
-                          <SelectTrigger id="fruit-select">
-                            <SelectValue placeholder="Selecione a fruta" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="limao">Limão</SelectItem>
-                            <SelectItem value="goiaba">Goiaba</SelectItem>
-                            <SelectItem value="abacaxi">Abacaxi</SelectItem>
-                            <SelectItem value="laranja">Laranja</SelectItem>
-                            <SelectItem value="manga">Manga</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="type-select">Tipo/Número</Label>
-                        <Select value={fruitType} onValueChange={setFruitType}>
-                          <SelectTrigger id="type-select">
-                            <SelectValue placeholder="Selecione o tipo" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="1">1</SelectItem>
-                            <SelectItem value="2">2</SelectItem>
-                            <SelectItem value="3">3</SelectItem>
-                            <SelectItem value="4">4</SelectItem>
-                            <SelectItem value="5">5</SelectItem>
-                            <SelectItem value="1V">1V</SelectItem>
-                            <SelectItem value="2V">2V</SelectItem>
-                            <SelectItem value="3V">3V</SelectItem>
-                            <SelectItem value="4V">4V</SelectItem>
-                            <SelectItem value="plant. verde">plant. verde</SelectItem>
-                            <SelectItem value="plant. mad.">plant. mad.</SelectItem>
-                            <SelectItem value="miúda">miúda</SelectItem>
-                            <SelectItem value="média">média</SelectItem>
-                            <SelectItem value="grande">grande</SelectItem>
-                            <SelectItem value="bom">bom</SelectItem>
-                            <SelectItem value="fraco">fraco</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="quantity-input">Quantidade</Label>
-                        <Input
-                          id="quantity-input"
-                          type="number"
-                          placeholder="Digite a quantidade"
-                          value={quantity}
-                          onChange={(e) => setQuantity(e.target.value)}
-                        />
-                      </div>
-                    </div>
-
-                    <DialogFooter>
-                      <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                        Cancelar
-                      </Button>
-                      <Button onClick={addFruitItem}>Adicionar Fruta ao Pallet</Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-              </div>
-
-              <div className="border rounded-md">
-                {fruitItems.length > 0 ? (
-                  <div className="divide-y">
-                    {fruitItems.map((item) => (
-                      <div key={item.id} className="flex items-center justify-between p-3">
-                        <div className="flex-1">
-                          <span className="font-medium">{item.name} </span>
-                          <span className="text-muted-foreground">{item.type} - </span>
-                          <span>{item.quantity}</span>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-destructive hover:text-destructive/90"
-                          onClick={() => removeFruitItem(item.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="p-8 text-center text-muted-foreground">
-                    Nenhuma fruta adicionada. Clique em "Adicionar Fruta" para começar.
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="space-y-2 mb-6">
-              <Label htmlFor="signature">Assinatura</Label>
-              <Input id="signature" placeholder="Digite o nome para assinatura" />
-            </div>
-
-            <Button type="submit" className="w-full bg-primary hover:bg-primary/90">
-              <Save className="mr-2 h-4 w-4" />
-              Salvar Romaneio
+            <Button
+              className="bg-primary hover:bg-primary/90"
+              onClick={() => roteador.push("/pallets/novo")}
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Adicionar Pallet
             </Button>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  )
-}
+          </div>
 
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center text-primary">
+                <Layers className="mr-2 h-5 w-5" />
+                Lista de Pallets
+              </CardTitle>
+              <CardDescription>
+                {termoPesquisa
+                  ? `${palletsFiltrados.length} pallet(s) encontrado(s) de ${pallets.length} total`
+                  : `${pallets.length} pallet(s) cadastrado(s)`}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {carregando ? (
+                <div className="flex items-center justify-center py-10">
+                  <div className="text-center">
+                    <div className="animate-spin text-4xl mb-4">◌</div>
+                    <p className="text-muted-foreground">Carregando pallets...</p>
+                  </div>
+                </div>
+              ) : pallets.length > 0 ? (
+                <>
+                  <div className="mb-4">
+                    <div className="relative max-w-sm">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                      <Input
+                        placeholder="Pesquisar por lado, bloco ou carga..."
+                        value={termoPesquisa}
+                        onChange={(e) => setTermoPesquisa(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+
+                  {palletsAtuais.length > 0 ? (
+                    <>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="font-semibold">ID</TableHead>
+                            <TableHead className="font-semibold">Lado</TableHead>
+                            <TableHead className="font-semibold">Bloco</TableHead>
+                            <TableHead className="font-semibold">Carga</TableHead>
+                            <TableHead className="text-center font-semibold w-32">Ações</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {palletsAtuais.map((pallet) => (
+                            <TableRow key={pallet.id} className="hover:bg-muted/50">
+                              <TableCell className="font-medium">#{pallet.id}</TableCell>
+                              <TableCell>
+                                <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
+                                  {pallet.lado}
+                                </span>
+                              </TableCell>
+                              <TableCell>{pallet.bloco}</TableCell>
+                              <TableCell>
+                                {pallet.carga
+                                  ? `Carga #${pallet.idCarga}${pallet.carga.destino ? ` — ${pallet.carga.destino}` : ""}`
+                                  : `Carga #${pallet.idCarga}`}
+                              </TableCell>
+                              <TableCell className="text-center">
+                                <div className="flex justify-center gap-1">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 w-8 p-0"
+                                    disabled={navegandoPara === pallet.id || excluindoId === pallet.id}
+                                    onClick={() => { setNavegandoPara(pallet.id); roteador.push(`/pallets/editar/${pallet.id}`); }}
+                                  >
+                                    {navegandoPara === pallet.id
+                                      ? <Loader2 className="h-4 w-4 animate-spin" />
+                                      : <Edit className="h-4 w-4" />}
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-destructive hover:text-destructive/90 h-8 w-8 p-0"
+                                    disabled={excluindoId === pallet.id || navegandoPara === pallet.id}
+                                    onClick={() => setConfirmacao(pallet)}
+                                  >
+                                    {excluindoId === pallet.id
+                                      ? <Loader2 className="h-4 w-4 animate-spin" />
+                                      : <Trash2 className="h-4 w-4" />}
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+
+                      {totalPaginas > 1 && (
+                        <div className="flex items-center justify-between mt-4">
+                          <p className="text-sm text-muted-foreground">
+                            Mostrando {indiceInicio + 1} a{" "}
+                            {Math.min(indiceFim, palletsFiltrados.length)} de{" "}
+                            {palletsFiltrados.length} pallets
+                          </p>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setPaginaAtual(paginaAtual - 1)}
+                              disabled={paginaAtual === 1}
+                            >
+                              Anterior
+                            </Button>
+                            <span className="text-sm">
+                              Página {paginaAtual} de {totalPaginas}
+                            </span>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setPaginaAtual(paginaAtual + 1)}
+                              disabled={paginaAtual === totalPaginas}
+                            >
+                              Próxima
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="text-center py-10">
+                      <Search className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold mb-2">Nenhum pallet encontrado</h3>
+                      <p className="text-muted-foreground mb-4">
+                        Não encontramos pallets com o termo &quot;{termoPesquisa}&quot;.
+                      </p>
+                      <Button variant="outline" onClick={() => setTermoPesquisa("")}>
+                        Limpar pesquisa
+                      </Button>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="text-center py-10">
+                  <Layers className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">Nenhum pallet cadastrado</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Comece adicionando o primeiro pallet.
+                  </p>
+                  <Button onClick={() => roteador.push("/pallets/novo")}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Adicionar Primeiro Pallet
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+      <ConfirmacaoExclusao
+        open={!!confirmacao}
+        onOpenChange={(v) => { if (!v && !excluindoId) setConfirmacao(null); }}
+        onConfirmar={aoExcluir}
+        carregando={excluindoId !== null}
+      />
+    </ProtectedRoute>
+  );
+}
