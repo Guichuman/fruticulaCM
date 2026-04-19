@@ -20,7 +20,9 @@ async function inicializar() {
     credentials: true,
   });
 
-  const porta = process.env.PORT || process.env.PORTA || 3000;
+  const porta = Number(process.env.PORT || process.env.PORTA || 3000);
+  console.log(`⚙️  PORT env: ${process.env.PORT} | PORTA env: ${process.env.PORTA} | Usando: ${porta}`);
   await app.listen(porta, '0.0.0.0');
+  console.log(`🚀 Frutícola CM API rodando na porta ${porta}`);
 }
 inicializar();
