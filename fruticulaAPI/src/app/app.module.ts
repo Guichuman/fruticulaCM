@@ -22,19 +22,34 @@ import { TipoFrutaEmbalagemModule } from 'src/tipo-fruta-embalagem/tipo-fruta-em
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get<string>('DB_HOST'),
-        port: configService.get<number>('DB_PORT'),
-        username: configService.get<string>('DB_USERNAME'),
-        password: configService.get<string>('DB_PASSWORD'),
-        database: configService.get<string>('DB_DATABASE'),
-        autoLoadEntities: true,
-        synchronize: false,
-        ssl: process.env.NODE_ENV === 'production'
-          ? { rejectUnauthorized: false }
-          : false,
-      }),
+      useFactory: (configService: ConfigService) => {
+        const databaseUrl = configService.get<string>('DATABASE_URL');
+        const isProduction = process.env.NODE_ENV === 'production';
+
+        if (databaseUrl) {
+          console.log('⚙️  TypeORM: usando DATABASE_URL');
+          return {
+            type: 'postgres',
+            url: databaseUrl,
+            autoLoadEntities: true,
+            synchronize: false,
+            ssl: { rejectUnauthorized: false },
+          };
+        }
+
+        console.log('⚙️  TypeORM: usando variáveis individuais de DB');
+        return {
+          type: 'postgres',
+          host: configService.get<string>('DB_HOST'),
+          port: configService.get<number>('DB_PORT'),
+          username: configService.get<string>('DB_USERNAME'),
+          password: configService.get<string>('DB_PASSWORD'),
+          database: configService.get<string>('DB_DATABASE'),
+          autoLoadEntities: true,
+          synchronize: false,
+          ssl: isProduction ? { rejectUnauthorized: false } : false,
+        };
+      },
       inject: [ConfigService],
     }),
     AutenticacaoModule,
