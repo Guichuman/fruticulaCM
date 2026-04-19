@@ -21,7 +21,7 @@ async function inicializar() {
   });
 
   const porta = process.env.PORT || process.env.PORTA || 3000;
-  await app.listen(porta);
+  await app.listen(porta, '0.0.0.0');
   console.log(`🚀 Frutícola CM API rodando na porta ${porta}`);
 }
 inicializar();
