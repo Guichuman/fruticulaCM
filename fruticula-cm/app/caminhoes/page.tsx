@@ -33,6 +33,7 @@ export default function PaginaCaminhoes() {
   const [confirmacao, setConfirmacao] = useState<{ id: number; placa: string } | null>(null);
   const [excluindoId, setExcluindoId] = useState<number | null>(null);
   const [navegandoPara, setNavegandoPara] = useState<number | null>(null);
+  const [adicionandoNovo, setAdicionandoNovo] = useState(false);
 
   const caminhoesFiltrados = caminhoes.filter((c) =>
     c.placa.toLowerCase().includes(termoPesquisa.toLowerCase())
@@ -83,9 +84,8 @@ export default function PaginaCaminhoes() {
               <h1 className="text-3xl font-bold text-primary">Caminhões</h1>
               <p className="text-muted-foreground">Gerencie sua frota de caminhões</p>
             </div>
-            <Button className="bg-primary hover:bg-primary/90" onClick={() => roteador.push("/caminhoes/novo")}>
-              <Plus className="mr-2 h-4 w-4" />
-              Adicionar Caminhão
+            <Button className="bg-primary hover:bg-primary/90" disabled={adicionandoNovo} onClick={() => { setAdicionandoNovo(true); roteador.push("/caminhoes/novo"); }}>
+              {adicionandoNovo ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Aguarde...</> : <><Plus className="mr-2 h-4 w-4" />Adicionar Caminhão</>}
             </Button>
           </div>
           <Card>
@@ -179,7 +179,9 @@ export default function PaginaCaminhoes() {
                 <div className="text-center py-10">
                   <Truck className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2">Nenhum caminhão cadastrado</h3>
-                  <Button onClick={() => roteador.push("/caminhoes/novo")}><Plus className="mr-2 h-4 w-4" />Adicionar Caminhão</Button>
+                  <Button disabled={adicionandoNovo} onClick={() => { setAdicionandoNovo(true); roteador.push("/caminhoes/novo"); }}>
+                    {adicionandoNovo ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Aguarde...</> : <><Plus className="mr-2 h-4 w-4" />Adicionar Caminhão</>}
+                  </Button>
                 </div>
               )}
             </CardContent>

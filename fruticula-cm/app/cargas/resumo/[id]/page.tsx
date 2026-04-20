@@ -71,6 +71,7 @@ export default function PaginaResumoCarga() {
   const [baixandoPdf, setBaixandoPdf] = useState(false);
   const [exportandoPlanilha, setExportandoPlanilha] = useState(false);
   const [voltando, setVoltando] = useState(false);
+  const [corrigindo, setCorrigindo] = useState(false);
 
   useEffect(() => {
     if (!cargaId) return;
@@ -525,12 +526,23 @@ export default function PaginaResumoCarga() {
               <Button
                 variant="outline"
                 className="flex-1 border-destructive text-destructive hover:bg-destructive hover:text-white"
-                onClick={() =>
-                  roteador.push(`/cargas/carregamento/${carga.id}`)
-                }
+                disabled={corrigindo}
+                onClick={() => {
+                  setCorrigindo(true);
+                  roteador.push(`/cargas/carregamento/${carga.id}`);
+                }}
               >
-                <Wrench className="mr-2 h-4 w-4" />
-                Corrigir Carga
+                {corrigindo ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Aguarde...
+                  </>
+                ) : (
+                  <>
+                    <Wrench className="mr-2 h-4 w-4" />
+                    Corrigir Carga
+                  </>
+                )}
               </Button>
             </div>
           </div>

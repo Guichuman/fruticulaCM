@@ -48,6 +48,7 @@ export default function PalletsPage() {
   const [confirmacao, setConfirmacao] = useState<Pallet | null>(null);
   const [excluindoId, setExcluindoId] = useState<number | null>(null);
   const [navegandoPara, setNavegandoPara] = useState<number | null>(null);
+  const [adicionandoNovo, setAdicionandoNovo] = useState(false);
   const [paginaAtual, setPaginaAtual] = useState(1);
   const itensPorPagina = 10;
 
@@ -112,10 +113,10 @@ export default function PalletsPage() {
             </div>
             <Button
               className="bg-primary hover:bg-primary/90"
-              onClick={() => roteador.push("/pallets/novo")}
+              disabled={adicionandoNovo}
+              onClick={() => { setAdicionandoNovo(true); roteador.push("/pallets/novo"); }}
             >
-              <Plus className="mr-2 h-4 w-4" />
-              Adicionar Pallet
+              {adicionandoNovo ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Aguarde...</> : <><Plus className="mr-2 h-4 w-4" />Adicionar Pallet</>}
             </Button>
           </div>
 
@@ -262,9 +263,8 @@ export default function PalletsPage() {
                   <p className="text-muted-foreground mb-4">
                     Comece adicionando o primeiro pallet.
                   </p>
-                  <Button onClick={() => roteador.push("/pallets/novo")}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Adicionar Primeiro Pallet
+                  <Button disabled={adicionandoNovo} onClick={() => { setAdicionandoNovo(true); roteador.push("/pallets/novo"); }}>
+                    {adicionandoNovo ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Aguarde...</> : <><Plus className="mr-2 h-4 w-4" />Adicionar Primeiro Pallet</>}
                   </Button>
                 </div>
               )}

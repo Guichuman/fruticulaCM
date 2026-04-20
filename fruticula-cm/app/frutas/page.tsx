@@ -25,6 +25,7 @@ export default function PaginaFrutas() {
   const [confirmacao, setConfirmacao] = useState<Fruta | null>(null);
   const [excluindoId, setExcluindoId] = useState<number | null>(null);
   const [navegandoPara, setNavegandoPara] = useState<number | null>(null);
+  const [adicionandoNovo, setAdicionandoNovo] = useState(false);
 
   const frutasFiltradas = frutas.filter((f) => f.nome.toLowerCase().includes(termoPesquisa.toLowerCase()));
   const totalPaginas = Math.ceil(frutasFiltradas.length / itensPorPagina);
@@ -60,8 +61,8 @@ export default function PaginaFrutas() {
         <div className="container mx-auto py-10">
           <div className="flex items-center justify-between mb-6">
             <div><h1 className="text-3xl font-bold text-primary">Frutas</h1><p className="text-muted-foreground">Gerencie seu inventário de frutas</p></div>
-            <Button className="bg-primary hover:bg-primary/90" onClick={() => roteador.push("/frutas/novo")}>
-              <Plus className="mr-2 h-4 w-4" />Adicionar Fruta
+            <Button className="bg-primary hover:bg-primary/90" disabled={adicionandoNovo} onClick={() => { setAdicionandoNovo(true); roteador.push("/frutas/novo"); }}>
+              {adicionandoNovo ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Aguarde...</> : <><Plus className="mr-2 h-4 w-4" />Adicionar Fruta</>}
             </Button>
           </div>
           <Card>
@@ -137,7 +138,9 @@ export default function PaginaFrutas() {
                 <div className="text-center py-10">
                   <Apple className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2">Nenhuma fruta cadastrada</h3>
-                  <Button onClick={() => roteador.push("/frutas/novo")}><Plus className="mr-2 h-4 w-4" />Adicionar Primeira Fruta</Button>
+                  <Button disabled={adicionandoNovo} onClick={() => { setAdicionandoNovo(true); roteador.push("/frutas/novo"); }}>
+                    {adicionandoNovo ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Aguarde...</> : <><Plus className="mr-2 h-4 w-4" />Adicionar Primeira Fruta</>}
+                  </Button>
                 </div>
               )}
             </CardContent>

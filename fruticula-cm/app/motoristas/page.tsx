@@ -29,6 +29,7 @@ export default function PaginaMotoristas() {
   const [confirmacao, setConfirmacao] = useState<Motorista | null>(null);
   const [excluindoId, setExcluindoId] = useState<number | null>(null);
   const [navegandoPara, setNavegandoPara] = useState<number | null>(null);
+  const [adicionandoNovo, setAdicionandoNovo] = useState(false);
   const [paginaAtual, setPaginaAtual] = useState(1);
   const itensPorPagina = 10;
 
@@ -86,9 +87,8 @@ export default function PaginaMotoristas() {
               <h1 className="text-3xl font-bold text-primary">Motoristas</h1>
               <p className="text-muted-foreground">Gerencie seus motoristas de entrega</p>
             </div>
-            <Button className="bg-primary hover:bg-primary/90" onClick={() => roteador.push("/motoristas/novo")}>
-              <Plus className="mr-2 h-4 w-4" />
-              Adicionar Motorista
+            <Button className="bg-primary hover:bg-primary/90" disabled={adicionandoNovo} onClick={() => { setAdicionandoNovo(true); roteador.push("/motoristas/novo"); }}>
+              {adicionandoNovo ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Aguarde...</> : <><Plus className="mr-2 h-4 w-4" />Adicionar Motorista</>}
             </Button>
           </div>
 
@@ -209,9 +209,8 @@ export default function PaginaMotoristas() {
                   <User className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2">Nenhum motorista cadastrado</h3>
                   <p className="text-muted-foreground mb-4">Comece adicionando seu primeiro motorista de entrega.</p>
-                  <Button onClick={() => roteador.push("/motoristas/novo")}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Adicionar Primeiro Motorista
+                  <Button disabled={adicionandoNovo} onClick={() => { setAdicionandoNovo(true); roteador.push("/motoristas/novo"); }}>
+                    {adicionandoNovo ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Aguarde...</> : <><Plus className="mr-2 h-4 w-4" />Adicionar Primeiro Motorista</>}
                   </Button>
                 </div>
               )}
