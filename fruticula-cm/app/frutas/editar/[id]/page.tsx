@@ -39,7 +39,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { toast } from "sonner";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { ProtectedAdminRoute } from "@/components/ProtectedAdminRoute";
 import { ConfirmacaoExclusao } from "@/components/confirmacao-exclusao";
 import { api } from "@/lib/api";
 
@@ -283,16 +283,16 @@ export default function PaginaEditarFruta() {
 
   if (carregando) {
     return (
-      <ProtectedRoute>
+      <ProtectedAdminRoute>
         <div className="min-h-screen flex items-center justify-center">
           <div className="animate-spin text-4xl">◌</div>
         </div>
-      </ProtectedRoute>
+      </ProtectedAdminRoute>
     );
   }
 
   return (
-    <ProtectedRoute>
+    <ProtectedAdminRoute>
       <div className="min-h-screen bg-background">
         <NavBar />
         <div className="container mx-auto py-10">
@@ -662,6 +662,6 @@ export default function PaginaEditarFruta() {
         onOpenChange={(v) => { if (!v) setConfirmEmbalagem(null); }}
         onConfirmar={aoRemoverEmbalagem}
       />
-    </ProtectedRoute>
+    </ProtectedAdminRoute>
   );
 }

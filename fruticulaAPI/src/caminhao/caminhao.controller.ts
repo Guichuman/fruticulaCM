@@ -11,6 +11,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { JwtAutenticacaoGuard } from 'src/autenticacao/guards/jwt-autenticacao.guard';
+import { AdminGuard } from 'src/autenticacao/guards/admin.guard';
 import { CaminhaoConsultaService } from './caminhao-consulta.service';
 import { CriarCaminhaoUseCase } from './casos-de-uso/criar-caminhao.caso-de-uso';
 import { AtualizarCaminhaoUseCase } from './casos-de-uso/atualizar-caminhao.caso-de-uso';
@@ -20,7 +21,7 @@ import { AtualizarCaminhaoDto } from './dto/atualizar-caminhao.dto';
 import { PlacaVO } from 'src/compartilhado/value-objects/placa.vo';
 import { QuantidadeVO } from 'src/compartilhado/value-objects/quantidade.vo';
 
-@UseGuards(JwtAutenticacaoGuard)
+@UseGuards(JwtAutenticacaoGuard, AdminGuard)
 @Controller('caminhao')
 export class CaminhaoController {
   constructor(

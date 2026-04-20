@@ -10,9 +10,9 @@ import { toast } from "sonner";
 
 const itensNavBase = [
   { href: "/",           label: "Início",     Icon: Home,  apenasAdmin: false },
-  { href: "/motoristas", label: "Motoristas", Icon: User,  apenasAdmin: false },
-  { href: "/caminhoes",  label: "Caminhões",  Icon: Truck, apenasAdmin: false },
-  { href: "/frutas",     label: "Frutas",     Icon: Apple, apenasAdmin: false },
+  { href: "/motoristas", label: "Motoristas", Icon: User,  apenasAdmin: true },
+  { href: "/caminhoes",  label: "Caminhões",  Icon: Truck, apenasAdmin: true },
+  { href: "/frutas",     label: "Frutas",     Icon: Apple, apenasAdmin: true },
   { href: "/cargas",     label: "Cargas",     Icon: Package, apenasAdmin: false },
   { href: "/usuarios",   label: "Usuários",   Icon: Users, apenasAdmin: true  },
 ];

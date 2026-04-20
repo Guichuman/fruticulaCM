@@ -12,7 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { ProtectedAdminRoute } from "@/components/ProtectedAdminRoute";
 
 export default function CadastrosPage() {
   const roteador = useRouter();
@@ -25,7 +25,7 @@ export default function CadastrosPage() {
   };
 
   return (
-    <ProtectedRoute>
+    <ProtectedAdminRoute>
       <main className="min-h-screen bg-background">
         <NavBar />
         <div className="container mx-auto py-10 px-4">
@@ -117,6 +117,6 @@ export default function CadastrosPage() {
           </div>
         </div>
       </main>
-    </ProtectedRoute>
+    </ProtectedAdminRoute>
   );
 }

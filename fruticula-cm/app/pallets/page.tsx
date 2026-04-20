@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { ProtectedAdminRoute } from "@/components/ProtectedAdminRoute";
 import { api } from "@/lib/api";
 
 type Carga = {
@@ -99,7 +99,7 @@ export default function PalletsPage() {
   };
 
   return (
-    <ProtectedRoute>
+    <ProtectedAdminRoute>
       <div className="min-h-screen bg-background">
         <NavBar />
         <div className="container mx-auto py-10">
@@ -278,6 +278,6 @@ export default function PalletsPage() {
         onConfirmar={aoExcluir}
         carregando={excluindoId !== null}
       />
-    </ProtectedRoute>
+    </ProtectedAdminRoute>
   );
 }

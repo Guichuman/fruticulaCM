@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { ArrowLeft, Loader2, User } from "lucide-react";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { ProtectedAdminRoute } from "@/components/ProtectedAdminRoute";
 import { api } from "@/lib/api";
 
 export default function PaginaNovoMotorista() {
@@ -40,7 +40,7 @@ export default function PaginaNovoMotorista() {
   };
 
   return (
-    <ProtectedRoute>
+    <ProtectedAdminRoute>
       <div className="min-h-screen bg-background">
         <NavBar />
         <div className="container mx-auto py-10">
@@ -82,6 +82,6 @@ export default function PaginaNovoMotorista() {
           </Card>
         </div>
       </div>
-    </ProtectedRoute>
+    </ProtectedAdminRoute>
   );
 }

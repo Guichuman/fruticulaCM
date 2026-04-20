@@ -2,6 +2,7 @@ import {
   Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, HttpCode, HttpStatus,
 } from '@nestjs/common';
 import { JwtAutenticacaoGuard } from 'src/autenticacao/guards/jwt-autenticacao.guard';
+import { AdminGuard } from 'src/autenticacao/guards/admin.guard';
 import { PalletFrutasConsultaService } from './pallet-frutas-consulta.service';
 import { CriarPalletFrutaUseCase } from './casos-de-uso/criar-pallet-fruta.caso-de-uso';
 import { AtualizarPalletFrutaUseCase } from './casos-de-uso/atualizar-pallet-fruta.caso-de-uso';
@@ -10,7 +11,7 @@ import { CriarPalletFrutaDto } from './dto/criar-pallet-fruta.dto';
 import { AtualizarPalletFrutaDto } from './dto/atualizar-pallet-fruta.dto';
 import { QuantidadeVO } from 'src/compartilhado/value-objects/quantidade.vo';
 
-@UseGuards(JwtAutenticacaoGuard)
+@UseGuards(JwtAutenticacaoGuard, AdminGuard)
 @Controller('pallet-fruta')
 export class PalletFrutasController {
   constructor(

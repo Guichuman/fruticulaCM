@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { ProtectedAdminRoute } from "@/components/ProtectedAdminRoute";
 import { ConfirmacaoExclusao } from "@/components/confirmacao-exclusao";
 import { api } from "@/lib/api";
 
@@ -74,7 +74,7 @@ export default function PaginaCaminhoes() {
   };
 
   return (
-    <ProtectedRoute>
+    <ProtectedAdminRoute>
       <div className="min-h-screen bg-background">
         <NavBar />
         <div className="container mx-auto py-10">
@@ -192,6 +192,6 @@ export default function PaginaCaminhoes() {
         onConfirmar={aoExcluir}
         carregando={excluindoId !== null}
       />
-    </ProtectedRoute>
+    </ProtectedAdminRoute>
   );
 }

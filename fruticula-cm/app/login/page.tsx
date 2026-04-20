@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { LogIn, Loader2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { salvarSessao, Usuario } from "@/lib/auth";
+import { eAdministrador } from "@/lib/auth";
 
 interface RespostaLogin {
   token: string;
@@ -48,7 +49,7 @@ export default function PaginaLogin() {
       salvarSessao(resposta.token, resposta.usuario);
 
       toast.success(`Bem-vindo, ${resposta.usuario.nome}!`);
-      roteador.push("/");
+      roteador.push(resposta.usuario.perfil === 'A' ? "/" : "/cargas");
     } catch (erro) {
       const mensagemErro =
         erro instanceof Error ? erro.message : "Credenciais inválidas";

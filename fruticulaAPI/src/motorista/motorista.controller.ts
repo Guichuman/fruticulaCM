@@ -11,7 +11,8 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { JwtAutenticacaoGuard } from 'src/autenticacao/guards/jwt-autenticacao.guard';
-import { MotoristaConsultaService } from './motorista-consulta.service';
+import { AdminGuard } from 'src/autenticacao/guards/admin.guard';
+import { MotoristaConsultaService} from './motorista-consulta.service';
 import { CriarMotoristaUseCase } from './casos-de-uso/criar-motorista.caso-de-uso';
 import { AtualizarMotoristaUseCase } from './casos-de-uso/atualizar-motorista.caso-de-uso';
 import { RemoverMotoristaUseCase } from './casos-de-uso/remover-motorista.caso-de-uso';
@@ -21,7 +22,7 @@ import { NomeVO } from 'src/compartilhado/value-objects/nome.vo';
 import { TelefoneVO } from 'src/compartilhado/value-objects/telefone.vo';
 import { CpfVO } from 'src/compartilhado/value-objects/cpf.vo';
 
-@UseGuards(JwtAutenticacaoGuard)
+@UseGuards(JwtAutenticacaoGuard, AdminGuard)
 @Controller('motorista')
 export class MotoristaController {
   constructor(

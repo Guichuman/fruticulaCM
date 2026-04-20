@@ -11,6 +11,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { JwtAutenticacaoGuard } from 'src/autenticacao/guards/jwt-autenticacao.guard';
+import { AdminGuard } from 'src/autenticacao/guards/admin.guard';
 import { TipoFrutaConsultaService } from './tipo-fruta-consulta.service';
 import { CriarTipoFrutaUseCase } from './casos-de-uso/criar-tipo-fruta.caso-de-uso';
 import { AtualizarTipoFrutaUseCase } from './casos-de-uso/atualizar-tipo-fruta.caso-de-uso';
@@ -19,7 +20,7 @@ import { CriarTipoFrutaDto } from './dto/criar-tipo-fruta.dto';
 import { AtualizarTipoFrutaDto } from './dto/atualizar-tipo-fruta.dto';
 import { NomeVO } from 'src/compartilhado/value-objects/nome.vo';
 
-@UseGuards(JwtAutenticacaoGuard)
+@UseGuards(JwtAutenticacaoGuard, AdminGuard)
 @Controller('tipo-fruta')
 export class TipoFrutaController {
   constructor(

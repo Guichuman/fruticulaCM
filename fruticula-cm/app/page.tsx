@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { NavBar } from "@/components/nav-bar";
+import { eAdministrador } from "@/lib/auth";
 import { Package, Settings, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +18,12 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 export default function PaginaInicial() {
   const roteador = useRouter();
   const [navegandoPara, setNavegandoPara] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!eAdministrador()) {
+      roteador.replace("/cargas");
+    }
+  }, [roteador]);
 
   const navegar = (destino: string) => {
     if (navegandoPara) return;

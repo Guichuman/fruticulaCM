@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { ArrowLeft, Loader2, User } from "lucide-react";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { ProtectedAdminRoute } from "@/components/ProtectedAdminRoute";
 import { api } from "@/lib/api";
 
 export default function PaginaEditarMotorista() {
@@ -59,11 +59,11 @@ export default function PaginaEditarMotorista() {
   };
 
   if (carregando) return (
-    <ProtectedRoute><div className="min-h-screen flex items-center justify-center"><div className="animate-spin text-4xl">◌</div></div></ProtectedRoute>
+    <ProtectedAdminRoute><div className="min-h-screen flex items-center justify-center"><div className="animate-spin text-4xl">◌</div></div></ProtectedAdminRoute>
   );
 
   return (
-    <ProtectedRoute>
+    <ProtectedAdminRoute>
       <div className="min-h-screen bg-background">
         <NavBar />
         <div className="container mx-auto py-10">
@@ -117,6 +117,6 @@ export default function PaginaEditarMotorista() {
           </Card>
         </div>
       </div>
-    </ProtectedRoute>
+    </ProtectedAdminRoute>
   );
 }

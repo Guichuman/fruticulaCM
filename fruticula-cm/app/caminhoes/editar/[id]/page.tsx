@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { ArrowLeft, Loader2, Truck } from "lucide-react";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { ProtectedAdminRoute } from "@/components/ProtectedAdminRoute";
 import { api } from "@/lib/api";
 
 interface Motorista { id: number; nome: string; }
@@ -85,15 +85,15 @@ export default function PaginaEditarCaminhao() {
 
   if (carregando)
     return (
-      <ProtectedRoute>
+      <ProtectedAdminRoute>
         <div className="min-h-screen flex items-center justify-center">
           <div className="animate-spin text-4xl">◌</div>
         </div>
-      </ProtectedRoute>
+      </ProtectedAdminRoute>
     );
 
   return (
-    <ProtectedRoute>
+    <ProtectedAdminRoute>
       <div className="min-h-screen bg-background">
         <NavBar />
         <div className="container mx-auto py-10">
@@ -191,6 +191,6 @@ export default function PaginaEditarCaminhao() {
           </Card>
         </div>
       </div>
-    </ProtectedRoute>
+    </ProtectedAdminRoute>
   );
 }

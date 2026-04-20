@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { ProtectedAdminRoute } from "@/components/ProtectedAdminRoute";
 import { api } from "@/lib/api";
 
 type Carga = {
@@ -103,7 +103,7 @@ export default function NovoPalletPage() {
   };
 
   return (
-    <ProtectedRoute>
+    <ProtectedAdminRoute>
       <div className="min-h-screen bg-background">
         <NavBar />
         <div className="container mx-auto py-10">
@@ -219,6 +219,6 @@ export default function NovoPalletPage() {
           </div>
         </div>
       </div>
-    </ProtectedRoute>
+    </ProtectedAdminRoute>
   );
 }
