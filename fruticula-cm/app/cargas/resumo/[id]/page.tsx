@@ -362,4 +362,36 @@ export default function PaginaResumoCarga() {
                 )}
               </Button>
               <Button
-                className="flex-1 bg-primary hover:bg-prima
+                className="flex-1 bg-primary hover:bg-primary/90"
+                onClick={exportarPlanilha}
+                disabled={exportandoPlanilha}
+              >
+                {exportandoPlanilha ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Exportando...
+                  </>
+                ) : (
+                  <>
+                    <FileSpreadsheet className="mr-2 h-4 w-4" />
+                    Exportar Planilha
+                  </>
+                )}
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1 border-destructive text-destructive hover:bg-destructive hover:text-white"
+                onClick={() =>
+                  roteador.push(`/cargas/carregamento/${carga.id}`)
+                }
+              >
+                <Wrench className="mr-2 h-4 w-4" />
+                Corrigir Carga
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ProtectedRoute>
+  );
+}
