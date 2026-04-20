@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { obterToken } from "@/lib/auth";
 import { NavBar } from "@/components/nav-bar";
 import {
   ArrowLeft,
@@ -108,28 +107,173 @@ export default function PaginaResumoCarga() {
     if (!carga || baixandoPdf) return;
     setBaixandoPdf(true);
     try {
-      const token = obterToken();
-      const urlBase =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-      const resposta = await fetch(`${urlBase}/carga/${cargaId}/romaneio`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const { jsPDF } = await import("jspdf");
+      const autoTable = (await import("jspdf-autotable")).default;
+
+      // ── Cores ────────────────────────────────────────────────────────────
+      const GREEN: [number, number, number] = [106, 168, 79];
+      const WHITE: [number, number, number] = [255, 255, 255];
+      const LIGHT_GREEN: [number, number, number] = [240, 253, 244];
+      const GRAY_BG: [number, number, number] = [249, 249, 249];
+
+      const motorista = carga.motorista?.nome ?? "—";
+      const dataStr = new Date(carga.criadoEm).toLocaleDateString("pt-BR");
+      const dataHifen = dataStr.replace(/\//g, "-");
+      const modelo = carga.caminhao.modelo ?? "";
+      const placa = carga.caminhao.placa ?? "—";
+      const temBaixo = carga.caminhao.palletBaixo === "S";
+
+      const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const PW = doc.internal.pageSize.getWidth();
+
+      // ── Mapa pallet: "bloco-lado" → itens ────────────────────────────────
+      type ItemPallet = { nomeFruta: string; nomeTipo: string; nomeEmb: string; qtd: number };
+      const palletMap = new Map<string, ItemPallet[]>();
+      for (const p of carga.pallets ?? []) {
+        palletMap.set(
+          `${p.bloco}-${p.lado}`,
+          (p.palletFrutas ?? []).map((pf) => ({
+            nomeFruta: pf.tipoFrutaEmbalagem?.tipoFruta?.fruta?.nome ?? "—",
+            nomeTipo: pf.tipoFrutaEmbalagem?.tipoFruta?.nome ?? "—",
+            nomeEmb: pf.tipoFrutaEmbalagem?.nome ?? "—",
+            qtd: pf.quantidadeCaixa,
+          }))
+        );
+      }
+
+      const lados = temBaixo ? ["MA", "AA", "MB", "AB"] : ["MA", "AA"];
+      const labelLado: Record<string, string> = {
+        MA: "Motorista Alto",
+        AA: "Passageiro Alto",
+        MB: "Motorista Baixo",
+        AB: "Passageiro Baixo",
+      };
+      const formatarItens = (items: ItemPallet[]) =>
+        items.map((i) => `${i.nomeFruta} ${i.nomeTipo} - ${i.nomeEmb}: ${i.qtd}`).join("\n");
+
+      // ════════════════════════════════════════════════════════════════════
+      // PÁGINA 1 — Tabela por bloco e lado
+      // ════════════════════════════════════════════════════════════════════
+      doc.setFontSize(16);
+      doc.setFont("helvetica", "bold");
+      doc.text(`Romaneio ${motorista} ${dataHifen}`, PW / 2, 18, { align: "center" });
+
+      const qtdBlocos = carga.caminhao.qtdBlocos ?? 0;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const bodyPag1: any[][] = [];
+      for (let b = 1; b <= qtdBlocos; b++) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const row: any[] = [
+          { content: `Bloco ${b}`, styles: { fontStyle: "bold", fillColor: LIGHT_GREEN, halign: "center" } },
+        ];
+        for (const lado of lados) {
+          const items = palletMap.get(`${b}-${lado}`) ?? [];
+          row.push(
+            items.length > 0
+              ? { content: formatarItens(items) }
+              : { content: "—", styles: { textColor: [170, 170, 170], halign: "center" } }
+          );
+        }
+        bodyPag1.push(row);
+      }
+
+      autoTable(doc, {
+        head: [["Bloco", ...lados.map((l) => labelLado[l])]],
+        body: bodyPag1,
+        startY: 25,
+        styles: { fontSize: 8, cellPadding: 3, valign: "top", overflow: "linebreak" },
+        headStyles: { fillColor: GREEN, textColor: WHITE, fontStyle: "bold", fontSize: 9 },
+        columnStyles: { 0: { cellWidth: 20, halign: "center" } },
+        alternateRowStyles: { fillColor: [250, 255, 250] },
+        theme: "grid",
+        margin: { left: 14, right: 14 },
       });
 
-      if (!resposta.ok) throw new Error("Erro ao gerar PDF");
+      // ════════════════════════════════════════════════════════════════════
+      // PÁGINA 2 — Resumo por fruta
+      // ════════════════════════════════════════════════════════════════════
+      doc.addPage();
 
-      const blob = await resposta.blob();
-      const objUrl = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      const motorista = carga.motorista?.nome ?? "romaneio";
-      const data = new Date(carga.criadoEm)
-        .toLocaleDateString("pt-BR")
-        .replace(/\//g, "-");
-      a.href = objUrl;
-      a.download = `romaneio-${motorista.toLowerCase().replace(/\s+/g, "-")}-${data}.pdf`;
-      a.click();
-      URL.revokeObjectURL(objUrl);
-    } catch {
-      toast.error("Erro ao baixar o PDF");
+      doc.setFontSize(16);
+      doc.setFont("helvetica", "bold");
+      doc.text(`Romaneio de Carga - ID: ${carga.id}`, 14, 18);
+
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Data: ${dataStr}`, 14, 28);
+      doc.text(`Caminhão: ${placa}${modelo ? ` - ${modelo}` : ""}`, 14, 34);
+      doc.text(`Motorista: ${motorista}`, 14, 40);
+
+      // Agrupamento por fruta
+      type SubItem = { descricao: string; quantidade: number };
+      const grupoFruta = new Map<string, SubItem[]>();
+      for (const p of carga.pallets ?? []) {
+        for (const pf of p.palletFrutas ?? []) {
+          const nomeFruta = pf.tipoFrutaEmbalagem?.tipoFruta?.fruta?.nome ?? "—";
+          const nomeTipo = pf.tipoFrutaEmbalagem?.tipoFruta?.nome ?? "—";
+          const nomeEmb = pf.tipoFrutaEmbalagem?.nome ?? "—";
+          const sku = pf.tipoFrutaEmbalagem?.sku ?? 0;
+          const descricao = `${nomeFruta} ${nomeTipo} - ${nomeEmb} (Código - ${sku})`;
+          if (!grupoFruta.has(nomeFruta)) grupoFruta.set(nomeFruta, []);
+          const lista = grupoFruta.get(nomeFruta)!;
+          const existente = lista.find((i) => i.descricao === descricao);
+          if (existente) existente.quantidade += pf.quantidadeCaixa;
+          else lista.push({ descricao, quantidade: pf.quantidadeCaixa });
+        }
+      }
+
+      const totalPallets = carga.pallets?.length ?? 0;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const summaryBody: any[][] = [
+        [
+          { content: "Total de Pallets na Carga", styles: { fontStyle: "bold" } },
+          { content: String(totalPallets), styles: { fontStyle: "bold" } },
+        ],
+      ];
+
+      for (const [nomeFruta, itens] of grupoFruta) {
+        // linha separadora
+        summaryBody.push([
+          { content: "", colSpan: 2, styles: { fillColor: GRAY_BG, minCellHeight: 3, cellPadding: 0 } },
+        ]);
+        // cabeçalho da fruta
+        summaryBody.push([
+          { content: nomeFruta, colSpan: 2, styles: { fontStyle: "bold", fillColor: GRAY_BG } },
+        ]);
+        let totalFruta = 0;
+        for (const item of itens) {
+          summaryBody.push([
+            { content: `    ${item.descricao}`, styles: { fillColor: WHITE } },
+            { content: String(item.quantidade), styles: { fillColor: WHITE } },
+          ]);
+          totalFruta += item.quantidade;
+        }
+        // total da fruta
+        summaryBody.push([
+          { content: `Total ${nomeFruta}`, styles: { fontStyle: "bold", halign: "right", fillColor: GRAY_BG } },
+          { content: String(totalFruta), styles: { fontStyle: "bold", fillColor: GRAY_BG } },
+        ]);
+      }
+
+      autoTable(doc, {
+        head: [[
+          { content: "Descrição do Sumário", styles: { fillColor: GREEN, textColor: WHITE, fontStyle: "bold" } },
+          { content: "Quantidade", styles: { fillColor: GREEN, textColor: WHITE, fontStyle: "bold", halign: "center" } },
+        ]],
+        body: summaryBody,
+        startY: 48,
+        styles: { fontSize: 9, cellPadding: 3, overflow: "linebreak" },
+        columnStyles: { 1: { cellWidth: 30, halign: "left" } },
+        theme: "grid",
+        margin: { left: 14, right: 14 },
+      });
+
+      // ── Download ─────────────────────────────────────────────────────────
+      const nomeArq = `romaneio-${motorista.toLowerCase().replace(/\s+/g, "-")}-${dataHifen}.pdf`;
+      doc.save(nomeArq);
+    } catch (err) {
+      console.error(err);
+      toast.error("Erro ao gerar PDF");
     } finally {
       setBaixandoPdf(false);
     }
