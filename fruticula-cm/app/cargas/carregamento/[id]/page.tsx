@@ -971,4 +971,101 @@ export default function PaginaCarregamento() {
                                 className="h-7 w-20 text-sm"
                                 autoFocus
                               />
-                              <span className="text-xs text-
+                              <span className="text-xs text-muted-foreground">
+                                caixas
+                              </span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 w-7 p-0 text-green-600 hover:text-green-700"
+                                onClick={() => confirmarEdicao(item.id)}
+                              >
+                                <Check className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 w-7 p-0 text-muted-foreground"
+                                onClick={cancelarEdicao}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1 shrink-0">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 w-7 p-0 text-muted-foreground hover:text-primary"
+                                onClick={() => iniciarEdicao(item)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-destructive hover:text-destructive/90 h-7 w-7 p-0"
+                                onClick={() => solicitarRemocaoItem(item.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center h-[100px] text-muted-foreground text-sm">
+                      Nenhum item adicionado.
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <Button
+                onClick={salvarPallet}
+                disabled={
+                  !blocoSelecionado ||
+                  !ladoSelecionado ||
+                  itensPallet.length === 0 ||
+                  salvandoPallet
+                }
+                className="bg-primary hover:bg-primary/90 w-full py-3 text-base"
+              >
+                {salvandoPallet ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Salvando...
+                  </>
+                ) : (
+                  "Salvar Pallet na Carga"
+                )}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {(() => {
+          const item = itensPallet.find((i) => i.id === confirmItemId);
+          return (
+            <ConfirmacaoExclusao
+              open={confirmItemId !== null}
+              onOpenChange={(v) => {
+                if (!v) setConfirmItemId(null);
+              }}
+              onConfirmar={confirmarRemocaoItem}
+            />
+          );
+        })()}
+
+        <ConfirmacaoExclusao
+          open={confirmPallet !== null}
+          onOpenChange={(v) => {
+            if (!v) setConfirmPallet(null);
+          }}
+          onConfirmar={() => confirmPallet && removerPallet(confirmPallet.id)}
+        />
+      </div>
+    </ProtectedRoute>
+  );
+}
