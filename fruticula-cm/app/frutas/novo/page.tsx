@@ -27,8 +27,8 @@ export default function PaginaNovaFruta() {
     const erros: FieldErrors = {};
     if (!nome.trim()) {
       erros.nome = "Nome da fruta é obrigatório";
-    } else if (nome.trim().length < 2) {
-      erros.nome = "Nome deve ter pelo menos 2 caracteres";
+    } else if (nome.trim().length < 1) {
+      erros.nome = "Nome da fruta é obrigatório";
     }
     return erros;
   };

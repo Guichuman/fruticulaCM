@@ -16,11 +16,11 @@ type Carga = {
   criadoEm: string;
   status: string;
   totalPallets: number;
+  motorista?: { nome?: string };
   caminhao: {
     placa: string;
     qtdBlocos: number;
     palletBaixo: string;
-    motorista?: { nome?: string };
   };
 };
 
@@ -244,7 +244,7 @@ export default function PaginaCargas() {
                           </div>
                           <div className="flex items-center gap-2">
                             <User className="h-4 w-4 text-muted-foreground" />
-                            <span>{carga.caminhao.motorista?.nome || "Motorista não vinculado"}</span>
+                            <span>{carga.motorista?.nome || "Motorista não vinculado"}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <Package className="h-4 w-4 text-muted-foreground" />
@@ -350,4 +350,4 @@ export default function PaginaCargas() {
       </div>
     </ProtectedRoute>
   );
-}
+}                                                                                                                                                                                                                                                                                                                                                                                                                                                            

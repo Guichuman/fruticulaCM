@@ -9,11 +9,11 @@ export interface ResumoCarga {
   criadoEm: Date;
   status: StatusCargaEnum;
   totalPallets: number;
+  motorista: { nome: string } | null;
   caminhao: {
     placa: string;
     qtdBlocos: number;
     palletBaixo: string;
-    motorista: { nome: string } | null;
   };
 }
 
@@ -43,7 +43,7 @@ export class CargaConsultaService {
       .select(['carga.id', 'carga.criadoEm', 'carga.status'])
       .leftJoin('carga.caminhao', 'caminhao')
       .addSelect(['caminhao.placa', 'caminhao.qtdBlocos', 'caminhao.palletBaixo'])
-      .leftJoin('caminhao.motorista', 'motorista')
+      .leftJoin('carga.motorista', 'motorista')
       .addSelect(['motorista.nome'])
       .loadRelationCountAndMap('carga.totalPallets', 'carga.pallets')
       .orderBy('carga.criadoEm', 'DESC')
@@ -83,7 +83,8 @@ export class CargaConsultaService {
     const carga = await this.repositorio.findOne({
       where: { id },
       relations: {
-        caminhao: { motorista: true },
+        caminhao: true,
+        motorista: true,
         pallets: {
           palletFrutas: {
             tipoFrutaEmbalagem: { tipoFruta: { fruta: true } },

@@ -47,12 +47,12 @@ type DadosCarga = {
   id: number;
   criadoEm: string;
   status: string;
+  motorista: { nome: string };
   caminhao: {
     placa: string;
     modelo?: string;
     qtdBlocos: number;
     palletBaixo: string;
-    motorista: { nome: string };
   };
   pallets: PalletApi[];
 };
@@ -120,7 +120,7 @@ export default function PaginaResumoCarga() {
       const blob = await resposta.blob();
       const objUrl = URL.createObjectURL(blob);
       const a = document.createElement("a");
-      const motorista = carga.caminhao.motorista?.nome ?? "romaneio";
+      const motorista = carga.motorista?.nome ?? "romaneio";
       const data = new Date(carga.criadoEm)
         .toLocaleDateString("pt-BR")
         .replace(/\//g, "-");
@@ -139,7 +139,7 @@ export default function PaginaResumoCarga() {
     if (!carga || exportandoPlanilha) return;
     setExportandoPlanilha(true);
 
-    const motorista = carga.caminhao.motorista?.nome ?? "—";
+    const motorista = carga.motorista?.nome ?? "—";
     const modelo = carga.caminhao.modelo ?? "—";
     const placa = carga.caminhao.placa ?? "—";
     const data = new Date(carga.criadoEm).toLocaleDateString("pt-BR");
@@ -279,7 +279,7 @@ export default function PaginaResumoCarga() {
                 <User className="h-4 w-4 text-muted-foreground shrink-0" />
                 <span className="text-muted-foreground">Motorista:</span>
                 <span className="font-medium">
-                  {carga.caminhao.motorista?.nome ?? "—"}
+                  {carga.motorista?.nome ?? "—"}
                 </span>
               </div>
             </div>
@@ -362,36 +362,4 @@ export default function PaginaResumoCarga() {
                 )}
               </Button>
               <Button
-                className="flex-1 bg-primary hover:bg-primary/90"
-                onClick={exportarPlanilha}
-                disabled={exportandoPlanilha}
-              >
-                {exportandoPlanilha ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Exportando...
-                  </>
-                ) : (
-                  <>
-                    <FileSpreadsheet className="mr-2 h-4 w-4" />
-                    Exportar Planilha
-                  </>
-                )}
-              </Button>
-              <Button
-                variant="outline"
-                className="flex-1 border-destructive text-destructive hover:bg-destructive hover:text-white"
-                onClick={() =>
-                  roteador.push(`/cargas/carregamento/${carga.id}`)
-                }
-              >
-                <Wrench className="mr-2 h-4 w-4" />
-                Corrigir Carga
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </ProtectedRoute>
-  );
-}
+                className="flex-1 bg-primary hover:bg-prima
