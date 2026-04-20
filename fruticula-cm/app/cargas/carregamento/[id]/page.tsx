@@ -274,6 +274,14 @@ export default function PaginaCarregamento() {
       return;
     }
 
+    const jaExiste = itensPallet.some(
+      (i) => i.idTipoFrutaEmbalagem === embalagem.id,
+    );
+    if (jaExiste) {
+      toast.error("Fruta já cadastrada no pallet, altere a quantidade.");
+      return;
+    }
+
     const novoItem: ItemPallet = {
       id: proximoIdItem,
       idTipoFrutaEmbalagem: embalagem.id,
