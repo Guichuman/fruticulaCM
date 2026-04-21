@@ -59,9 +59,11 @@ type DadosCarga = {
   pallets: PalletApi[];
 };
 
-type ResumoItem = {
-  descricao: string; // "Goiaba Tipo 1 — Plástico"
-  totalCaixas: number;
+type SubItemResumo = { descricao: string; totalCaixas: number };
+type GrupoFrutaResumo = {
+  nomeFruta: string;
+  itens: SubItemResumo[];
+  subtotal: number;
 };
 
 export default function PaginaResumoCarga() {
@@ -88,23 +90,31 @@ export default function PaginaResumoCarga() {
       .finally(() => setCarregando(false));
   }, [cargaId, roteador]);
 
-  // Agrupa caixas por tipoFrutaEmbalagem
-  const calcularResumo = (pallets: PalletApi[]): ResumoItem[] => {
-    const mapa = new Map<string, number>();
+  // Agrupa itens por fruta, ordenado alfabeticamente
+  const calcularGrupos = (pallets: PalletApi[]): GrupoFrutaResumo[] => {
+    const grupoFruta = new Map<string, SubItemResumo[]>();
 
     for (const pallet of pallets) {
       for (const pf of pallet.palletFrutas ?? []) {
         const nomeFruta = pf.tipoFrutaEmbalagem?.tipoFruta?.fruta?.nome ?? "—";
-        const nomeTipo = pf.tipoFrutaEmbalagem?.tipoFruta?.nome ?? "—";
-        const nomeEmb = pf.tipoFrutaEmbalagem?.nome ?? "—";
-        const chave = `${nomeFruta} ${nomeTipo} — ${nomeEmb}`;
-        mapa.set(chave, (mapa.get(chave) ?? 0) + pf.quantidadeCaixa);
+        const nomeTipo  = pf.tipoFrutaEmbalagem?.tipoFruta?.nome ?? "—";
+        const nomeEmb   = pf.tipoFrutaEmbalagem?.nome ?? "—";
+        const descricao = `${nomeFruta} ${nomeTipo} — ${nomeEmb}`;
+        if (!grupoFruta.has(nomeFruta)) grupoFruta.set(nomeFruta, []);
+        const lista = grupoFruta.get(nomeFruta)!;
+        const existente = lista.find((i) => i.descricao === descricao);
+        if (existente) existente.totalCaixas += pf.quantidadeCaixa;
+        else lista.push({ descricao, totalCaixas: pf.quantidadeCaixa });
       }
     }
 
-    return Array.from(mapa.entries())
-      .map(([descricao, totalCaixas]) => ({ descricao, totalCaixas }))
-      .sort((a, b) => b.totalCaixas - a.totalCaixas);
+    return Array.from(grupoFruta.entries())
+      .map(([nomeFruta, itens]) => ({
+        nomeFruta,
+        itens: itens.sort((a, b) => b.totalCaixas - a.totalCaixas),
+        subtotal: itens.reduce((s, i) => s + i.totalCaixas, 0),
+      }))
+      .sort((a, b) => a.nomeFruta.localeCompare(b.nomeFruta, "pt-BR"));
   };
 
   const exportarPDF = async () => {
@@ -227,9 +237,9 @@ export default function PaginaResumoCarga() {
 
   if (!carga) return null;
 
-  const resumo = calcularResumo(carga.pallets ?? []);
+  const grupos = calcularGrupos(carga.pallets ?? []);
   const totalPallets = carga.pallets?.length ?? 0;
-  const totalCaixas = resumo.reduce((s, i) => s + i.totalCaixas, 0);
+  const totalCaixas = grupos.reduce((s, g) => s + g.subtotal, 0);
 
   return (
     <ProtectedRoute>
@@ -306,7 +316,7 @@ export default function PaginaResumoCarga() {
             <div className="mb-6">
               <h2 className="text-base font-semibold mb-3">Itens Carregados</h2>
               <div className="border rounded-xl overflow-hidden">
-                {resumo.length > 0 ? (
+                {grupos.length > 0 ? (
                   <table className="w-full text-sm">
                     <thead className="bg-muted/50">
                       <tr>
@@ -318,22 +328,47 @@ export default function PaginaResumoCarga() {
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y">
-                      {resumo.map((item, idx) => (
-                        <tr key={idx} className="hover:bg-muted/20">
-                          <td className="px-4 py-3 font-medium">
-                            {item.descricao}
-                          </td>
-                          <td className="px-4 py-3 text-right tabular-nums">
-                            {item.totalCaixas}
-                          </td>
-                        </tr>
+                    <tbody>
+                      {grupos.map((grupo) => (
+                        <>
+                          {/* Cabeçalho do grupo de fruta */}
+                          <tr key={`grupo-${grupo.nomeFruta}`} className="bg-primary/8 border-t">
+                            <td
+                              colSpan={2}
+                              className="px-4 py-2 font-semibold text-primary text-xs uppercase tracking-wide bg-primary/5"
+                            >
+                              {grupo.nomeFruta}
+                            </td>
+                          </tr>
+
+                          {/* Itens do grupo */}
+                          {grupo.itens.map((item, idx) => (
+                            <tr key={`${grupo.nomeFruta}-${idx}`} className="hover:bg-muted/20 border-t border-muted/40">
+                              <td className="px-4 py-2.5 pl-7 text-muted-foreground">
+                                {item.descricao}
+                              </td>
+                              <td className="px-4 py-2.5 text-right tabular-nums font-medium">
+                                {item.totalCaixas}
+                              </td>
+                            </tr>
+                          ))}
+
+                          {/* Subtotal do grupo */}
+                          <tr key={`subtotal-${grupo.nomeFruta}`} className="bg-muted/20 border-t border-muted/60">
+                            <td className="px-4 py-2 text-right text-xs font-semibold text-muted-foreground pr-6">
+                              Total {grupo.nomeFruta}
+                            </td>
+                            <td className="px-4 py-2 text-right tabular-nums font-bold text-sm">
+                              {grupo.subtotal}
+                            </td>
+                          </tr>
+                        </>
                       ))}
                     </tbody>
                     <tfoot className="bg-muted/30 border-t-2">
                       <tr>
                         <td className="px-4 py-3 font-semibold text-sm">
-                          Total
+                          Total Geral
                         </td>
                         <td className="px-4 py-3 text-right font-bold tabular-nums">
                           {totalCaixas}
