@@ -769,7 +769,7 @@ export default function PaginaCarregamento() {
           </div>
         </div>
 
-        <Dialog open={modalAberta} onOpenChange={setModalAberta}>
+        <Dialog open={modalAberta} onOpenChange={(v) => { if (!salvandoPallet) setModalAberta(v); }}>
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-center text-xl font-semibold">

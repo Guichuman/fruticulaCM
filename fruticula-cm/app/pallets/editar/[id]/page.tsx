@@ -28,7 +28,12 @@ import { api } from "@/lib/api";
 
 type Carga = {
   id: number;
-  destino?: string;
+  criadoEm?: string;
+  motorista?: { nome?: string };
+};
+
+type RespostaPaginadaCarga = {
+  dados: Carga[];
 };
 
 type Pallet = {
@@ -65,12 +70,12 @@ export default function EditarPalletPage() {
       try {
         const [pallet, cargasData] = await Promise.all([
           api.get<Pallet>(`/pallet/${palletId}`),
-          api.get<Carga[]>("/carga"),
+          api.get<RespostaPaginadaCarga>("/carga"),
         ]);
         setLado(pallet.lado);
         setBloco(String(pallet.bloco));
         setIdCarga(String(pallet.idCarga));
-        setCargas(cargasData);
+        setCargas(cargasData.dados ?? []);
       } catch (erro) {
         toast.error("Pallet não encontrado");
         roteador.push("/pallets");
@@ -221,7 +226,7 @@ export default function EditarPalletPage() {
                       <SelectContent>
                         {cargas.map((carga) => (
                           <SelectItem key={carga.id} value={String(carga.id)}>
-                            Carga #{carga.id}{carga.destino ? ` — ${carga.destino}` : ""}
+                            Carga #{carga.id}{carga.motorista?.nome ? ` — ${carga.motorista.nome}` : ""}
                           </SelectItem>
                         ))}
                       </SelectContent>

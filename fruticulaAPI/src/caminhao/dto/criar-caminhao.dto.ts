@@ -1,7 +1,7 @@
 import {
   IsIn,
+  IsInt,
   IsNotEmpty,
-  IsNumber,
   IsOptional,
   IsPositive,
   IsString,
@@ -19,11 +19,12 @@ export class CriarCaminhaoDto {
   @MaxLength(32, { message: 'Modelo deve ter no máximo 32 caracteres' })
   modelo: string;
 
+  @IsInt({ message: 'Quantidade de blocos deve ser um número inteiro' })
   @IsPositive({ message: 'Quantidade de blocos deve ser positiva' })
-  @IsNotEmpty({ message: 'Quantidade de blocos é obrigatória' })
   qtdBlocos: number;
 
-  @IsNumber({}, { message: 'ID do motorista deve ser um número' })
+  @IsInt({ message: 'ID do motorista deve ser um número inteiro' })
+  @IsPositive({ message: 'ID do motorista deve ser positivo' })
   @IsOptional()
   idMotorista?: number;
 
