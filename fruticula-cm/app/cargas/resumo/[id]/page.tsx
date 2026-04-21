@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { api } from "@/lib/api";
+import { obterToken } from "@/lib/auth";
 
 type PalletFrutaApi = {
   id: number;
@@ -110,11 +111,7 @@ export default function PaginaResumoCarga() {
     if (!carga || baixandoPdf) return;
     setBaixandoPdf(true);
     try {
-      const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("token") ?? sessionStorage.getItem("token") ?? ""
-          : "";
-
+      const token = obterToken() ?? "";
       const urlBase =
         process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
