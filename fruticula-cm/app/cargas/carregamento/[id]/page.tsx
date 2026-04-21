@@ -293,6 +293,7 @@ export default function PaginaCarregamento() {
       return;
     }
 
+    setAdicionandoItem(true);
     const novoItem: ItemPallet = {
       id: proximoIdItem,
       idTipoFrutaEmbalagem: embalagem.id,
@@ -305,6 +306,7 @@ export default function PaginaCarregamento() {
     setProximoIdItem(proximoIdItem + 1);
     resetarFormItem();
     toast.success("Item adicionado ao pallet");
+    setAdicionandoItem(false);
   };
 
   const solicitarRemocaoItem = (itemId: number) => {
@@ -316,14 +318,15 @@ export default function PaginaCarregamento() {
   const confirmarRemocaoItem = async () => {
     if (confirmItemId === null) return;
     const novosItens = itensPallet.filter((item) => item.id !== confirmItemId);
-    setConfirmItemId(null);
 
     if (novosItens.length === 0 && palletDbIdEditando) {
+      setExcluindoItem(true);
       try {
         await api.delete(`/pallet/${palletDbIdEditando}`);
         setPalletesCarregados((prev) =>
           prev.filter((p) => p.dbId !== palletDbIdEditando),
         );
+        setConfirmItemId(null);
         setModalAberta(false);
         setPalletDbIdEditando(null);
         toast.success("Pallet excluído pois não restaram itens");
@@ -331,10 +334,13 @@ export default function PaginaCarregamento() {
         toast.error(
           erro instanceof Error ? erro.message : "Erro ao excluir pallet",
         );
+      } finally {
+        setExcluindoItem(false);
       }
       return;
     }
 
+    setConfirmItemId(null);
     setItensPallet(novosItens);
   };
 
@@ -363,6 +369,9 @@ export default function PaginaCarregamento() {
     setQuantidadeEditando("");
   };
 
+  const [adicionandoItem, setAdicionandoItem] = useState(false);
+  const [excluindoItem, setExcluindoItem] = useState(false);
+  const [excluindoPallet, setExcluindoPallet] = useState(false);
   const [salvandoPallet, setSalvandoPallet] = useState(false);
   const [finalizando, setFinalizando] = useState(false);
 
@@ -430,6 +439,7 @@ export default function PaginaCarregamento() {
 
   const removerPallet = async (palletId: number) => {
     const pallet = palletesCarregados.find((p) => p.id === palletId);
+    setExcluindoPallet(true);
     try {
       if (pallet?.dbId) {
         await api.delete(`/pallet/${pallet.dbId}`);
@@ -441,6 +451,8 @@ export default function PaginaCarregamento() {
       toast.error(
         erro instanceof Error ? erro.message : "Erro ao remover pallet",
       );
+    } finally {
+      setExcluindoPallet(false);
     }
   };
 
@@ -924,11 +936,16 @@ export default function PaginaCarregamento() {
                           !idFrutaSelecionada ||
                           !idTipoSelecionado ||
                           !idEmbalagemSelecionada ||
-                          !quantidade
+                          !quantidade ||
+                          adicionandoItem
                         }
                         className="h-9 px-3 bg-primary hover:bg-primary/90 shrink-0"
                       >
-                        Adicionar
+                        {adicionandoItem ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          "Adicionar"
+                        )}
                       </Button>
                     </div>
                   </div>
@@ -1059,25 +1076,22 @@ export default function PaginaCarregamento() {
           </DialogContent>
         </Dialog>
 
-        {(() => {
-          const item = itensPallet.find((i) => i.id === confirmItemId);
-          return (
-            <ConfirmacaoExclusao
-              open={confirmItemId !== null}
-              onOpenChange={(v) => {
-                if (!v) setConfirmItemId(null);
-              }}
-              onConfirmar={confirmarRemocaoItem}
-            />
-          );
-        })()}
+        <ConfirmacaoExclusao
+          open={confirmItemId !== null}
+          onOpenChange={(v) => {
+            if (!v && !excluindoItem) setConfirmItemId(null);
+          }}
+          onConfirmar={confirmarRemocaoItem}
+          carregando={excluindoItem}
+        />
 
         <ConfirmacaoExclusao
           open={confirmPallet !== null}
           onOpenChange={(v) => {
-            if (!v) setConfirmPallet(null);
+            if (!v && !excluindoPallet) setConfirmPallet(null);
           }}
           onConfirmar={() => confirmPallet && removerPallet(confirmPallet.id)}
+          carregando={excluindoPallet}
         />
       </div>
     </ProtectedRoute>
