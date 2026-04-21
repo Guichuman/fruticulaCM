@@ -330,9 +330,9 @@ export default function PaginaResumoCarga() {
                     </thead>
                     <tbody>
                       {grupos.map((grupo) => (
-                        <>
+                        <React.Fragment key={grupo.nomeFruta}>
                           {/* Cabeçalho do grupo de fruta */}
-                          <tr key={`grupo-${grupo.nomeFruta}`} className="bg-primary/8 border-t">
+                          <tr className="bg-primary/8 border-t">
                             <td
                               colSpan={2}
                               className="px-4 py-2 font-semibold text-primary text-xs uppercase tracking-wide bg-primary/5"
@@ -354,7 +354,7 @@ export default function PaginaResumoCarga() {
                           ))}
 
                           {/* Subtotal do grupo */}
-                          <tr key={`subtotal-${grupo.nomeFruta}`} className="bg-muted/20 border-t border-muted/60">
+                          <tr className="bg-muted/20 border-t border-muted/60">
                             <td className="px-4 py-2 text-right text-xs font-semibold text-muted-foreground pr-6">
                               Total {grupo.nomeFruta}
                             </td>
@@ -362,7 +362,7 @@ export default function PaginaResumoCarga() {
                               {grupo.subtotal}
                             </td>
                           </tr>
-                        </>
+                        </React.Fragment>
                       ))}
                     </tbody>
                     <tfoot className="bg-muted/30 border-t-2">
