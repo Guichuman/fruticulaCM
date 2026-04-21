@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer';
 import {
+  ArrayMinSize,
   IsArray,
   IsEnum,
   IsInt,
@@ -31,6 +32,7 @@ export class SalvarPalletCargaDto {
   lado: LadoPalletEnum;
 
   @IsArray({ message: 'Itens deve ser uma lista' })
+  @ArrayMinSize(1, { message: 'O pallet deve ter pelo menos um item' })
   @ValidateNested({ each: true })
   @Type(() => ItemPalletDto)
   itens: ItemPalletDto[];

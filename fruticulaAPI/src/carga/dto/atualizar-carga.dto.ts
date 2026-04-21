@@ -1,4 +1,4 @@
-import { IsIn, IsNumber, IsOptional } from 'class-validator';
+import { IsIn, IsInt, IsOptional } from 'class-validator';
 import { StatusCargaEnum } from 'src/compartilhado/enums/status-carga.enum';
 
 export class AtualizarCargaDto {
@@ -7,10 +7,10 @@ export class AtualizarCargaDto {
   status?: StatusCargaEnum;
 
   @IsOptional()
-  @IsNumber()
+  @IsInt({ message: 'Total de blocos deve ser um número inteiro' })
   totalBlocos?: number;
 
   @IsOptional()
-  @IsNumber()
+  @IsInt({ message: 'Máximo de caixas deve ser um número inteiro' })
   maxCaixas?: number;
 }
