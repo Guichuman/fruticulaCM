@@ -253,7 +253,10 @@ export class RomaneioService {
         }
       }
 
-      for (const [nomeFruta, itens] of grupoFruta) {
+      const grupoFrutaOrdenado = Array.from(grupoFruta.entries())
+        .sort(([a], [b]) => a.localeCompare(b, 'pt-BR'));
+
+      for (const [nomeFruta, itens] of grupoFrutaOrdenado) {
         // spacer
         if (ys + 4 > PH - ML) {
           doc.addPage({ size: 'A4', layout: 'portrait', margin: 0 });
