@@ -7,9 +7,11 @@ import { CargaConsultaService } from './carga-consulta.service';
 import { CriarCargaUseCase } from './casos-de-uso/criar-carga.caso-de-uso';
 import { AtualizarCargaUseCase } from './casos-de-uso/atualizar-carga.caso-de-uso';
 import { RemoverCargaUseCase } from './casos-de-uso/remover-carga.caso-de-uso';
+import { SalvarPalletCargaUseCase } from './casos-de-uso/salvar-pallet-carga.caso-de-uso';
 import { RomaneioService } from './romaneio.service';
 import { CriarCargaDto } from './dto/criar-carga.dto';
 import { AtualizarCargaDto } from './dto/atualizar-carga.dto';
+import { SalvarPalletCargaDto } from './dto/salvar-pallet-carga.dto';
 import { QuantidadeVO } from 'src/compartilhado/value-objects/quantidade.vo';
 import { StatusCargaEnum } from 'src/compartilhado/enums/status-carga.enum';
 
@@ -21,6 +23,7 @@ export class CargaController {
     private readonly criarUseCase: CriarCargaUseCase,
     private readonly atualizarUseCase: AtualizarCargaUseCase,
     private readonly removerUseCase: RemoverCargaUseCase,
+    private readonly salvarPalletUseCase: SalvarPalletCargaUseCase,
     private readonly romaneioService: RomaneioService,
   ) {}
 
@@ -51,6 +54,11 @@ export class CargaController {
   @Get(':id')
   buscarPorId(@Param('id') id: string) {
     return this.consultaService.buscarPorId(+id);
+  }
+
+  @Post(':id/pallet')
+  salvarPallet(@Param('id') id: string, @Body() dto: SalvarPalletCargaDto) {
+    return this.salvarPalletUseCase.executar(+id, dto);
   }
 
   @Get(':id/romaneio')

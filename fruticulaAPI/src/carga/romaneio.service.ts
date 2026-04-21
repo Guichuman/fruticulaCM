@@ -2,6 +2,15 @@ import { Injectable } from '@nestjs/common';
 import PDFDocument from 'pdfkit';
 import { CargaConsultaService } from './carga-consulta.service';
 
+const GREEN      = '#6AA84F';
+const GREEN_LITE = '#f0fdf4';
+const GRAY_BG    = '#f9f9f9';
+const WHITE      = '#ffffff';
+const BLACK      = '#000000';
+const GRAY_TEXT  = '#555555';
+const GRAY_CELL  = '#aaaaaa';
+const BORDER_CLR = '#cccccc';
+
 interface ItemCelula {
   nomeFruta: string;
   nomeTipo: string;
@@ -17,26 +26,30 @@ export class RomaneioService {
     const carga = await this.consultaService.buscarPorId(id);
 
     return new Promise((resolve, reject) => {
-      const doc = new PDFDocument({ size: 'A4', layout: 'landscape', margin: 0, autoFirstPage: true });
+      const doc = new PDFDocument({ size: 'A4', layout: 'portrait', margin: 0, autoFirstPage: true });
       const chunks: Buffer[] = [];
-
       doc.on('data', (c: Buffer) => chunks.push(c));
       doc.on('end', () => resolve(Buffer.concat(chunks)));
       doc.on('error', reject);
 
-      // ─── Constantes de layout ────────────────────────────────────────────
-      const ML = 40;          // margem lateral
-      const MT = 35;          // margem topo
-      const PW = doc.page.width;  // 841.89pt (A4 landscape)
-      const TABLE_W = PW - ML * 2;
+      // ─── Layout constants ────────────────────────────────────────────────
+      const PW   = doc.page.width;   // 595.28 pt
+      const PH   = doc.page.height;  // 841.89 pt
+      const ML   = 40;
+      const TW   = PW - ML * 2;      // table width = 515.28
+      const PAD  = 4;
+      const FS   = 8;
+      const LH   = 10;               // line height at FS 8
 
-      const motorista = carga.caminhao?.motorista?.nome ?? '—';
-      const dataStr = carga.criadoEm
-        ? new Date(carga.criadoEm).toLocaleDateString('pt-BR')
-        : '—';
-      const placa = carga.caminhao?.placa ?? '';
-      const temBaixo = carga.caminhao?.palletBaixo === 'S';
-      const lados = temBaixo ? ['MA', 'MB', 'AA', 'AB'] : ['MA', 'MB'];
+      // ─── Carga metadata ──────────────────────────────────────────────────
+      const motorista = carga.motorista?.nome ?? '—';
+      const dataStr   = carga.criadoEm ? new Date(carga.criadoEm).toLocaleDateString('pt-BR') : '—';
+      const dataHifen = dataStr.replace(/\//g, '-');
+      const placa     = carga.caminhao?.placa ?? '—';
+      const modelo    = carga.caminhao?.modelo ?? '';
+      const temBaixo  = carga.caminhao?.palletBaixo === 'S';
+
+      const lados = temBaixo ? ['MA', 'AA', 'MB', 'AB'] : ['MA', 'AA'];
       const labelLado: Record<string, string> = {
         MA: 'L.D. Motorista Alto',
         MB: 'L.D. Motorista Baixo',
@@ -44,146 +57,208 @@ export class RomaneioService {
         AB: 'L.D. Ajudante Baixo',
       };
 
-      const BLOCO_W = 45;
-      const COL_W = (TABLE_W - BLOCO_W) / lados.length;
-      const HEADER_H = 24;
-      const PAD = 5;
-      const FS = 9;
-      const LH = 13;
-      const ITEM_GAP = 3;
+      const BLOCO_W  = 50;
+      const COL_W    = (TW - BLOCO_W) / lados.length;
+      const HEADER_H = 22;
 
-      // ─── Mapa pallet ────────────────────────────────────────────────────
+      // ─── Pallet map ──────────────────────────────────────────────────────
       const palletMap = new Map<string, ItemCelula[]>();
       for (const p of carga.pallets ?? []) {
-        const key = `${p.bloco}-${p.lado}`;
         palletMap.set(
-          key,
+          `${p.bloco}-${p.lado}`,
           (p.palletFrutas ?? []).map((pf) => ({
             nomeFruta: pf.tipoFrutaEmbalagem?.tipoFruta?.fruta?.nome ?? '—',
-            nomeTipo: pf.tipoFrutaEmbalagem?.tipoFruta?.nome ?? '—',
-            nomeEmb: pf.tipoFrutaEmbalagem?.nome ?? '—',
-            qtd: pf.quantidadeCaixa,
+            nomeTipo:  pf.tipoFrutaEmbalagem?.tipoFruta?.nome ?? '—',
+            nomeEmb:   pf.tipoFrutaEmbalagem?.nome ?? '—',
+            qtd:       pf.quantidadeCaixa,
           })),
         );
       }
 
       // ─── Helpers ─────────────────────────────────────────────────────────
-      const fillRect = (x: number, y: number, w: number, h: number, hex: string) => {
-        doc.save().rect(x, y, w, h).fill(hex).restore();
+      const fillRect = (x: number, y: number, w: number, h: number, color: string) => {
+        doc.save().rect(x, y, w, h).fill(color).restore();
       };
 
-      const drawHeader = (y: number) => {
-        fillRect(ML, y, TABLE_W, HEADER_H, '#166534');
-        doc.fontSize(9).font('Helvetica-Bold').fillColor('#ffffff');
-        doc.text('Bloco', ML, y + 7, { width: BLOCO_W, align: 'center', lineBreak: false });
-        for (let i = 0; i < lados.length; i++) {
-          doc.text(
-            labelLado[lados[i]],
-            ML + BLOCO_W + i * COL_W,
-            y + 7,
-            { width: COL_W, align: 'center', lineBreak: false },
-          );
+      const strokeGrid = (x: number, y: number, w: number, h: number, colWidths: number[]) => {
+        doc.save().lineWidth(0.5).strokeColor(BORDER_CLR);
+        doc.rect(x, y, w, h).stroke();
+        let cx = x;
+        for (let i = 0; i < colWidths.length - 1; i++) {
+          cx += colWidths[i];
+          doc.moveTo(cx, y).lineTo(cx, y + h).stroke();
         }
-        doc.fillColor('#000000');
+        doc.restore();
+      };
+
+      const drawTableHeader = (y: number): number => {
+        fillRect(ML, y, TW, HEADER_H, GREEN);
+        doc.fontSize(9).font('Helvetica-Bold').fillColor(WHITE);
+        doc.text('Bloco', ML + PAD, y + 7, { width: BLOCO_W - PAD * 2, align: 'center', lineBreak: false });
+        for (let i = 0; i < lados.length; i++) {
+          const cx = ML + BLOCO_W + i * COL_W;
+          doc.text(labelLado[lados[i]], cx + PAD, y + 7, { width: COL_W - PAD * 2, align: 'center', lineBreak: false });
+        }
+        doc.fillColor(BLACK);
         return y + HEADER_H;
       };
 
       const rowHeight = (bloco: number): number => {
         let maxItems = 0;
         for (const lado of lados) {
-          const items = palletMap.get(`${bloco}-${lado}`) ?? [];
-          if (items.length > maxItems) maxItems = items.length;
+          const n = (palletMap.get(`${bloco}-${lado}`) ?? []).length;
+          if (n > maxItems) maxItems = n;
         }
-        if (maxItems === 0) return 28;
-        return maxItems * (LH * 2 + ITEM_GAP) - ITEM_GAP + PAD * 2;
+        return Math.max(maxItems, 1) * LH + PAD * 2;
       };
 
-      // ─── Título ──────────────────────────────────────────────────────────
-      doc
-        .fontSize(16)
-        .font('Helvetica-Bold')
-        .fillColor('#000000')
-        .text(`Romaneio ${motorista}`, ML, MT, { width: TABLE_W, align: 'center', lineBreak: false });
-      doc
-        .fontSize(10)
-        .font('Helvetica')
-        .fillColor('#555555')
-        .text(`${dataStr}  ·  ${placa}`, ML, MT + 22, { width: TABLE_W, align: 'center', lineBreak: false });
-      doc.fillColor('#000000');
+      // ════════════════════════════════════════════════════════════════════
+      // PAGE 1 — Pallet table
+      // ════════════════════════════════════════════════════════════════════
+      doc.fontSize(16).font('Helvetica-Bold').fillColor(BLACK);
+      doc.text(`Romaneio ${motorista} ${dataHifen}`, ML, 30, { width: TW, align: 'center', lineBreak: false });
 
-      let y = MT + 50;
-      y = drawHeader(y);
+      let y = 58;
+      y = drawTableHeader(y);
 
-      // ─── Linhas ──────────────────────────────────────────────────────────
-      for (let bloco = 1; bloco <= carga.totalBlocos; bloco++) {
+      const qtdBlocos = carga.totalBlocos ?? 0;
+      for (let bloco = 1; bloco <= qtdBlocos; bloco++) {
         const rH = rowHeight(bloco);
 
-        // Page break
-        if (y + rH > doc.page.height - ML) {
-          doc.addPage({ size: 'A4', layout: 'landscape', margin: 0 });
-          y = MT;
-          y = drawHeader(y);
+        if (y + rH > PH - ML) {
+          doc.addPage({ size: 'A4', layout: 'portrait', margin: 0 });
+          y = 30;
+          y = drawTableHeader(y);
         }
 
-        // Fundo alternado
-        fillRect(ML, y, TABLE_W, rH, bloco % 2 === 0 ? '#f5fbf5' : '#ffffff');
+        fillRect(ML, y, TW, rH, bloco % 2 === 0 ? '#f5fbf5' : WHITE);
+        fillRect(ML, y, BLOCO_W, rH, GREEN_LITE);
 
-        // Célula bloco
-        fillRect(ML, y, BLOCO_W, rH, '#f0fdf4');
-        doc
-          .fontSize(11)
-          .font('Helvetica-Bold')
-          .fillColor('#000000')
-          .text(`${bloco}`, ML, y + rH / 2 - 7, { width: BLOCO_W, align: 'center', lineBreak: false });
+        // Bloco number
+        doc.fontSize(10).font('Helvetica-Bold').fillColor(BLACK);
+        doc.text(`${bloco}`, ML + PAD, y + (rH - 10) / 2, { width: BLOCO_W - PAD * 2, align: 'center', lineBreak: false });
 
-        // Células de conteúdo
+        // Content cells
         for (let ci = 0; ci < lados.length; ci++) {
-          const cx = ML + BLOCO_W + ci * COL_W;
+          const cx    = ML + BLOCO_W + ci * COL_W;
           const items = palletMap.get(`${bloco}-${lados[ci]}`) ?? [];
 
           if (items.length === 0) {
-            doc
-              .fontSize(FS)
-              .font('Helvetica')
-              .fillColor('#aaaaaa')
-              .text('—', cx, y + rH / 2 - 6, { width: COL_W, align: 'center', lineBreak: false });
+            doc.fontSize(FS).font('Helvetica').fillColor(GRAY_CELL);
+            doc.text('—', cx + PAD, y + (rH - FS) / 2, { width: COL_W - PAD * 2, align: 'center', lineBreak: false });
           } else {
             let ty = y + PAD;
             for (const item of items) {
-              doc
-                .fontSize(FS)
-                .font('Helvetica-Bold')
-                .fillColor('#000000')
-                .text(`${item.nomeFruta} ${item.nomeTipo}`, cx + PAD, ty, {
-                  width: COL_W - PAD * 2,
-                  lineBreak: false,
-                });
+              doc.fontSize(FS).font('Helvetica').fillColor(BLACK);
+              doc.text(`${item.nomeFruta} ${item.nomeTipo} - ${item.nomeEmb}: ${item.qtd}`, cx + PAD, ty, {
+                width: COL_W - PAD * 2,
+                lineBreak: false,
+              });
               ty += LH;
-              doc
-                .fontSize(FS)
-                .font('Helvetica')
-                .fillColor('#555555')
-                .text(`${item.nomeEmb} - ${item.qtd}`, cx + PAD, ty, {
-                  width: COL_W - PAD * 2,
-                  lineBreak: false,
-                });
-              ty += LH + ITEM_GAP;
             }
           }
         }
 
-        // Bordas da linha
-        doc.save().strokeColor('#cccccc').lineWidth(0.5);
-        doc.rect(ML, y, TABLE_W, rH).stroke();
-        // Separadores de colunas
-        doc.moveTo(ML + BLOCO_W, y).lineTo(ML + BLOCO_W, y + rH).stroke();
-        for (let ci = 1; ci < lados.length; ci++) {
-          const cx = ML + BLOCO_W + ci * COL_W;
-          doc.moveTo(cx, y).lineTo(cx, y + rH).stroke();
-        }
-        doc.restore();
-
+        strokeGrid(ML, y, TW, rH, [BLOCO_W, ...lados.map(() => COL_W)]);
         y += rH;
+      }
+
+      // ════════════════════════════════════════════════════════════════════
+      // PAGE 2 — Summary
+      // ════════════════════════════════════════════════════════════════════
+      doc.addPage({ size: 'A4', layout: 'portrait', margin: 0 });
+
+      doc.fontSize(16).font('Helvetica-Bold').fillColor(BLACK);
+      doc.text(`Romaneio de Carga - ID: ${carga.id}`, ML, 30, { width: TW });
+
+      doc.fontSize(10).font('Helvetica').fillColor(BLACK);
+      doc.text(`Data: ${dataStr}`, ML, 58);
+      doc.text(`Caminhão: ${placa}${modelo ? ` - ${modelo}` : ''}`, ML, 72);
+      doc.text(`Motorista: ${motorista}`, ML, 86);
+
+      // ─── Summary table ───────────────────────────────────────────────────
+      const QTD_W  = 60;
+      const DESC_W = TW - QTD_W;
+      const ROW_H  = 18;
+      const FS_SUM = 9;
+
+      let ys = 108;
+
+      const drawSumHeader = (y: number): number => {
+        fillRect(ML, y, TW, ROW_H, GREEN);
+        doc.fontSize(FS_SUM).font('Helvetica-Bold').fillColor(WHITE);
+        doc.text('Descrição do Sumário', ML + PAD, y + 5, { width: DESC_W - PAD * 2, lineBreak: false });
+        doc.text('Quantidade', ML + DESC_W + PAD, y + 5, { width: QTD_W - PAD * 2, align: 'center', lineBreak: false });
+        doc.fillColor(BLACK);
+        return y + ROW_H;
+      };
+
+      const drawRow = (
+        desc: string, qty: string, bold: boolean, bg: string, alignRight = false,
+      ) => {
+        if (ys + ROW_H > PH - ML) {
+          doc.addPage({ size: 'A4', layout: 'portrait', margin: 0 });
+          ys = 30;
+          ys = drawSumHeader(ys);
+        }
+        fillRect(ML, ys, TW, ROW_H, bg);
+        const font = bold ? 'Helvetica-Bold' : 'Helvetica';
+        doc.fontSize(FS_SUM).font(font).fillColor(BLACK);
+        doc.text(desc, ML + PAD, ys + 5, { width: DESC_W - PAD * 2, align: alignRight ? 'right' : 'left', lineBreak: false });
+        if (qty) {
+          doc.text(qty, ML + DESC_W + PAD, ys + 5, { width: QTD_W - PAD * 2, lineBreak: false });
+        }
+        doc.save().lineWidth(0.5).strokeColor(BORDER_CLR).rect(ML, ys, TW, ROW_H).stroke();
+        doc.save().lineWidth(0.5).strokeColor(BORDER_CLR).moveTo(ML + DESC_W, ys).lineTo(ML + DESC_W, ys + ROW_H).stroke();
+        doc.restore();
+        ys += ROW_H;
+      };
+
+      ys = drawSumHeader(ys);
+
+      // Total pallets row
+      drawRow('Total de Pallets na Carga', String(carga.pallets?.length ?? 0), true, WHITE);
+
+      // Group by fruta
+      type SubItem = { descricao: string; quantidade: number };
+      const grupoFruta = new Map<string, SubItem[]>();
+      for (const p of carga.pallets ?? []) {
+        for (const pf of p.palletFrutas ?? []) {
+          const nomeFruta = pf.tipoFrutaEmbalagem?.tipoFruta?.fruta?.nome ?? '—';
+          const nomeTipo  = pf.tipoFrutaEmbalagem?.tipoFruta?.nome ?? '—';
+          const nomeEmb   = pf.tipoFrutaEmbalagem?.nome ?? '—';
+          const sku       = pf.tipoFrutaEmbalagem?.sku ?? 0;
+          const descricao = `${nomeFruta} ${nomeTipo} - ${nomeEmb} (Código - ${sku})`;
+          if (!grupoFruta.has(nomeFruta)) grupoFruta.set(nomeFruta, []);
+          const lista = grupoFruta.get(nomeFruta)!;
+          const existente = lista.find((i) => i.descricao === descricao);
+          if (existente) existente.quantidade += pf.quantidadeCaixa;
+          else lista.push({ descricao, quantidade: pf.quantidadeCaixa });
+        }
+      }
+
+      for (const [nomeFruta, itens] of grupoFruta) {
+        // spacer
+        if (ys + 4 > PH - ML) {
+          doc.addPage({ size: 'A4', layout: 'portrait', margin: 0 });
+          ys = 30;
+          ys = drawSumHeader(ys);
+        }
+        fillRect(ML, ys, TW, 4, GRAY_BG);
+        doc.save().lineWidth(0.5).strokeColor(BORDER_CLR).rect(ML, ys, TW, 4).stroke().restore();
+        ys += 4;
+
+        // Fruit group header
+        drawRow(nomeFruta, '', true, GRAY_BG);
+
+        let totalFruta = 0;
+        for (const item of itens) {
+          drawRow(`    ${item.descricao}`, String(item.quantidade), false, WHITE);
+          totalFruta += item.quantidade;
+        }
+
+        // Total fruit row
+        drawRow(`Total ${nomeFruta}`, String(totalFruta), true, GRAY_BG, true);
       }
 
       doc.end();

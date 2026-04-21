@@ -1,7 +1,9 @@
-import { IsNotEmpty, IsNumber, IsPositive } from 'class-validator';
+import { IsInt, IsNotEmpty, IsNumber, IsPositive, Max } from 'class-validator';
 
 export class CriarPalletFrutaDto {
+  @IsInt({ message: 'Quantidade de caixas deve ser um número inteiro' })
   @IsPositive({ message: 'Quantidade de caixas deve ser positiva' })
+  @Max(1000, { message: 'Quantidade não pode exceder 1000 caixas' })
   @IsNotEmpty({ message: 'Quantidade de caixas é obrigatória' })
   quantidadeCaixa: number;
 

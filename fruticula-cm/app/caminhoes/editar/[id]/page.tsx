@@ -55,8 +55,8 @@ export default function PaginaEditarCaminhao() {
         setMotoristas(listaMotoristas);
         if (caminhao.motorista) setIdMotorista(String(caminhao.motorista.id));
       })
-      .catch(() => {
-        toast.error("Erro ao carregar dados");
+      .catch((erro) => {
+        toast.error(erro instanceof Error ? erro.message : "Erro ao carregar dados");
         roteador.push("/caminhoes");
       })
       .finally(() => setCarregando(false));

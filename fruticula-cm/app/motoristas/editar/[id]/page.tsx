@@ -34,7 +34,7 @@ export default function PaginaEditarMotorista() {
         setCpf(dados.cpf);
         setStatus(dados.status ?? "A");
       } catch (erro) {
-        toast.error("Erro ao carregar motorista");
+        toast.error(erro instanceof Error ? erro.message : "Erro ao carregar motorista");
         roteador.push("/motoristas");
       } finally {
         setCarregando(false);

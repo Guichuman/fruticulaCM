@@ -102,9 +102,9 @@ const LADOS = ["MA", "MB", "AA", "AB"] as const;
 type LadoValor = (typeof LADOS)[number];
 
 const LADO_LABEL: Record<LadoValor, string> = {
-  MA: "L.D. Motorista",
+  MA: "L.D. Motorista Alto",
   MB: "L.D. Motorista Baixo",
-  AA: "L.D. Ajudante",
+  AA: "L.D. Ajudante Alto",
   AB: "L.D. Ajudante Baixo",
 };
 
@@ -145,6 +145,17 @@ export default function PaginaCarregamento() {
   const [confirmItemId, setConfirmItemId] = useState<number | null>(null);
   const [confirmPallet, setConfirmPallet] = useState<Pallet | null>(null);
   const [voltando, setVoltando] = useState(false);
+
+  // Aviso ao tentar sair com modal aberta e alterações não salvas
+  useEffect(() => {
+    const avisarSaida = (e: BeforeUnloadEvent) => {
+      if (modalAberta && itensPallet.length > 0) {
+        e.preventDefault();
+      }
+    };
+    window.addEventListener("beforeunload", avisarSaida);
+    return () => window.removeEventListener("beforeunload", avisarSaida);
+  }, [modalAberta, itensPallet]);
 
   useEffect(() => {
     if (!cargaId) return;
@@ -366,28 +377,23 @@ export default function PaginaCarregamento() {
     }
     setSalvandoPallet(true);
     try {
+      const novoPallet = await api.post<{ id: number }>(
+        `/carga/${cargaId}/pallet`,
+        {
+          bloco: Number.parseInt(blocoSelecionado),
+          lado: ladoSelecionado,
+          itens: itensPallet.map((item) => ({
+            idTipoFrutaEmbalagem: item.idTipoFrutaEmbalagem,
+            quantidadeCaixa: item.quantidade,
+          })),
+        },
+      );
+
       const existente = palletesCarregados.find(
         (p) =>
           p.bloco === Number.parseInt(blocoSelecionado) &&
           p.lado === ladoSelecionado,
       );
-      if (existente?.dbId) {
-        await api.delete(`/pallet/${existente.dbId}`);
-      }
-
-      const novoPallet = await api.post<{ id: number }>("/pallet", {
-        lado: ladoSelecionado,
-        bloco: Number.parseInt(blocoSelecionado),
-        idCarga: Number(cargaId),
-      });
-
-      for (const item of itensPallet) {
-        await api.post("/pallet-fruta", {
-          quantidadeCaixa: item.quantidade,
-          idPallet: novoPallet.id,
-          idTipoFrutaEmbalagem: item.idTipoFrutaEmbalagem,
-        });
-      }
 
       if (existente) {
         setPalletesCarregados(

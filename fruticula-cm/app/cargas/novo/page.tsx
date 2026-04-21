@@ -202,7 +202,7 @@ export default function PaginaNovaCarga() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="motorista">Selecione o Motorista</Label>
+                  <Label htmlFor="motorista">Selecione o Motorista <span className="text-destructive">*</span></Label>
                   <Select
                     value={idMotoristaSelecionado}
                     onValueChange={setIdMotoristaSelecionado}

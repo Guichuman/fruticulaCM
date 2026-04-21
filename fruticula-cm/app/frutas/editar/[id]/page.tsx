@@ -112,8 +112,8 @@ export default function PaginaEditarFruta() {
           `/fruta/${frutaId}`,
         );
         setNome(dados.nome);
-      } catch {
-        toast.error("Erro ao carregar fruta");
+      } catch (erro) {
+        toast.error(erro instanceof Error ? erro.message : "Erro ao carregar fruta");
         roteador.push("/frutas");
       } finally {
         setCarregando(false);

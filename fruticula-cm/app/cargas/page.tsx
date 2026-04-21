@@ -84,6 +84,10 @@ export default function PaginaCargas() {
   };
 
   const pesquisar = () => {
+    if (rascunhoInicio && rascunhoFim && rascunhoInicio > rascunhoFim) {
+      toast.error("Data fim deve ser maior do que data início");
+      return;
+    }
     setPesquisando(true);
     setDataInicio(rascunhoInicio);
     setDataFim(rascunhoFim);
