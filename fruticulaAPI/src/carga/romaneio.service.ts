@@ -103,13 +103,29 @@ export class RomaneioService {
         return y + HEADER_H;
       };
 
+      // Retorna a altura real que o texto ocupará dentro da largura da coluna
+      const alturaTexto = (texto: string): number => {
+        doc.fontSize(FS).font('Helvetica');
+        return doc.heightOfString(texto, { width: COL_W - PAD * 2 });
+      };
+
+      const ITEM_GAP = 2; // espaço vertical entre itens da mesma célula
+
       const rowHeight = (bloco: number): number => {
-        let maxItems = 0;
+        let maxH = LH + PAD * 2; // mínimo: uma linha vazia
         for (const lado of lados) {
-          const n = (palletMap.get(`${bloco}-${lado}`) ?? []).length;
-          if (n > maxItems) maxItems = n;
+          const items = palletMap.get(`${bloco}-${lado}`) ?? [];
+          if (items.length === 0) continue;
+          let colH = PAD * 2;
+          for (let k = 0; k < items.length; k++) {
+            const item = items[k];
+            const texto = `${item.nomeFruta} ${item.nomeTipo} - ${item.nomeEmb}: ${item.qtd}`;
+            colH += alturaTexto(texto);
+            if (k < items.length - 1) colH += ITEM_GAP;
+          }
+          if (colH > maxH) maxH = colH;
         }
-        return Math.max(maxItems, 1) * LH + PAD * 2;
+        return maxH;
       };
 
       // ════════════════════════════════════════════════════════════════════
@@ -148,13 +164,13 @@ export class RomaneioService {
             doc.text('—', cx + PAD, y + (rH - FS) / 2, { width: COL_W - PAD * 2, align: 'center', lineBreak: false });
           } else {
             let ty = y + PAD;
-            for (const item of items) {
+            for (let k = 0; k < items.length; k++) {
+              const item = items[k];
+              const texto = `${item.nomeFruta} ${item.nomeTipo} - ${item.nomeEmb}: ${item.qtd}`;
               doc.fontSize(FS).font('Helvetica').fillColor(BLACK);
-              doc.text(`${item.nomeFruta} ${item.nomeTipo} - ${item.nomeEmb}: ${item.qtd}`, cx + PAD, ty, {
-                width: COL_W - PAD * 2,
-                lineBreak: false,
-              });
-              ty += LH;
+              doc.text(texto, cx + PAD, ty, { width: COL_W - PAD * 2 });
+              ty += alturaTexto(texto);
+              if (k < items.length - 1) ty += ITEM_GAP;
             }
           }
         }
