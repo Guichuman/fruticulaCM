@@ -440,7 +440,7 @@ export default function PaginaEditarFruta() {
       {/* Modal Tipo + Embalagens */}
       <Dialog
         open={modalAberta}
-        onOpenChange={(open) => {
+        onOpenChange={(open: boolean) => {
           setModalAberta(open);
           if (!open) {
             resetarFormEmbalagem();

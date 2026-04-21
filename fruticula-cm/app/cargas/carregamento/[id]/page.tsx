@@ -769,7 +769,7 @@ export default function PaginaCarregamento() {
           </div>
         </div>
 
-        <Dialog open={modalAberta} onOpenChange={(v) => { if (!salvandoPallet) setModalAberta(v); }}>
+        <Dialog open={modalAberta} onOpenChange={(v: boolean) => { if (!salvandoPallet) setModalAberta(v); }}>
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-center text-xl font-semibold">
@@ -1090,7 +1090,7 @@ export default function PaginaCarregamento() {
           onOpenChange={(v) => {
             if (!v && !excluindoPallet) setConfirmPallet(null);
           }}
-          onConfirmar={() => confirmPallet && removerPallet(confirmPallet.id)}
+          onConfirmar={() => { if (confirmPallet) removerPallet(confirmPallet.id); }}
           carregando={excluindoPallet}
         />
       </div>
